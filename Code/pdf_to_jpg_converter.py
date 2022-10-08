@@ -10,10 +10,10 @@ import os
 
 folder = "../Data"
 os.chdir(folder)
-total_num = os.listdir("./PDFs").__len__()
+total_num = os.listdir("../PDFs").__len__()
 
-for index, name in enumerate(os.listdir("./PDFs"), start=1):
-    pdf_file = fitz.open(f"./PDFs/{name}")
+for index, name in enumerate(os.listdir("../PDFs"), start=1):
+    pdf_file = fitz.open(f"../PDFs/{name}")
     name_raw = name[0:-4]
     page = pdf_file[0]
 
