@@ -33,8 +33,7 @@ class CyclingData(Dataset):
             for i in range(red_labels.__len__()):
                 image_path = self.datafolder + '/' + red_labels.loc[i, "Name"] + '.png'
                 if os.path.exists(image_path):
-                    df = df.append({'Name': red_labels.loc[i, "Name"], 'Label': red_labels.loc[i, "label"]},
-                                   ignore_index=True)
+                    df = pd.concat([df, pd.DataFrame.from_dict({'Name': [red_labels.loc[i, "Name"]], 'Label': [red_labels.loc[i, "Label"]]})])
         if task == 'rim':
             "unfilled"
         if task == 'pred':
