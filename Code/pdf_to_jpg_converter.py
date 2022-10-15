@@ -9,6 +9,8 @@ import os
 #https://pythonscholar.com/blog/extract-images-from-pdf-in-python/
 
 folder = "../Data"
+if not os.path.isdir(folder):
+    os.mkdir(folder)
 os.chdir(folder)
 total_num = os.listdir("../PDFs").__len__()
 
