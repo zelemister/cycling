@@ -3,7 +3,7 @@ from torchvision import transforms
 def custom_transformer(img: Image.Image):
     transformer = transforms.Compose(
                         [transforms.PILToTensor(),
-                        transforms.CenterCrop(256),
+                        transforms.CenterCrop(224),
                         transforms.RandomRotation(180),
                         # RandomRotation(180) should rotate the image by a random 360 degrees. There are some filling
                         # options that are important, since RIM would be easily detectable by black corners
