@@ -40,8 +40,14 @@ data_transforms = {
     ]),
 }
 
-###implement Data + Transform
-
+data_dir = DATA_DIR
+dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
+         for x in ['train', 'val']}
+dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
+                                               shuffle=True, num_workers=25)
+                for x in ['train', 'val']}
+dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
+dset_classes = dsets['train'].classes
 
 def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=100):
     since = time.time()
