@@ -1,4 +1,4 @@
-from __future__ import print_function, division
+#from __future__ import print_function, division
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -43,7 +43,7 @@ data_dir = DATA_DIR
 dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
          for x in ['train', 'val']}
 dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
-                                               shuffle=True, num_workers=12)
+                                               shuffle=True, num_workers=0)
                 for x in ['train', 'val']}
 dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
 dset_classes = dsets['train'].classes
@@ -164,4 +164,4 @@ model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                        num_epochs=2)
 
 # Save model
-model_ft.save_state_dict('fine_tuned_best_model.pt')
+torch.save(model_ft.state_dict(), "../Models/fine_tuned_best_model.pt")
