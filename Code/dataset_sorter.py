@@ -8,9 +8,9 @@ folder = "../Data"
 if not os.path.exists(folder):
     os.mkdir(folder)
 
-bike_folder = folder + "bikelane"
-if not os.path.exists(folder + "bikelane"):
-    os.mkdir(folder + "bikelane")
+bike_folder = folder + "/bikelane"
+if not os.path.exists(folder + "/bikelane"):
+    os.mkdir(folder + "/bikelane")
 
 if not os.path.exists(bike_folder + "/train"):
     os.mkdir(bike_folder + "/train")
@@ -19,10 +19,10 @@ if not os.path.exists(bike_folder + "/val"):
     os.mkdir(bike_folder + "/val")
 
 for name in [bike_folder + "/train", bike_folder + "/val"]:
-    if not os.path.exists(name + "0"):
-        os.mkdir(name + "0")
-    if not os.path.exists(name + "1"):
-        os.mkdir(name + "1")
+    if not os.path.exists(name + " /0"):
+        os.mkdir(name + "/0")
+    if not os.path.exists(name + "/1"):
+        os.mkdir(name + "/1")
 
 labels = pandas.read_csv("../labeling_clean.csv")
 for i in range(labels.__len__()):
@@ -36,7 +36,9 @@ for i in range(labels.__len__()):
 
         if random.random() < 0.2:
             shutil.copyfile(old, bike_folder + "/val/" + new)
+            print(f"Copied File {new[2:]}")
         else:
             shutil.copyfile(old, bike_folder + "/train/" + new)
+            print(f"Copied File {new[2:]}")
 
 

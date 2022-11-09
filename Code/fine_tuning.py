@@ -6,13 +6,12 @@ from torch.autograd import Variable
 import numpy as np
 import torchvision
 from torchvision import datasets, models, transforms
-import matplotlib.pyplot as plt
 import time
 import copy
 import os
 from PIL import ImageFile
 from fine_tuning_config_file import *
-
+from model_loaders import get_model
 
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
@@ -44,7 +43,7 @@ data_dir = DATA_DIR
 dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
          for x in ['train', 'val']}
 dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
-                                               shuffle=True, num_workers=25)
+                                               shuffle=True, num_workers=12)
                 for x in ['train', 'val']}
 dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
 dset_classes = dsets['train'].classes
@@ -148,3 +147,21 @@ def exp_lr_scheduler(optimizer, epoch, init_lr=BASE_LR, lr_decay_epoch=EPOCH_DEC
         param_group['lr'] = lr
 
     return optimizer
+
+
+model_ft = get_model()
+criterion = nn.CrossEntropyLoss()
+if use_gpu:
+    criterion.cuda()
+    model_ft.cuda()
+
+optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.0001)
+
+
+
+# Run the functions and save the best model in the function model_ft.
+model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
+                       num_epochs=2)
+
+# Save model
+model_ft.save_state_dict('fine_tuned_best_model.pt')
