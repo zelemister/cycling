@@ -85,7 +85,7 @@ if __name__ == '__main__':
                             print(inputs, labels)
                     else:
                         inputs, labels = Variable(inputs), Variable(labels)
-
+                    print(inputs.__class__+  " " + labels.__class__)
                     # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
                     optimizer.zero_grad()
                     outputs = model(inputs)
