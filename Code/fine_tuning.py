@@ -16,11 +16,6 @@ from model_loaders import get_model
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 if __name__ == '__main__':
-    ## If you want to use the GPU, set GPU_MODE TO 1 in config file
-    use_gpu = GPU_MODE
-    if use_gpu:
-        torch.cuda.set_device(CUDA_DEVICE)
-
     count = 0
 
     # If you want to read more, transforms is a function from torchvision, and you can go read more here - http://pytorch.org/docs/master/torchvision/transforms.html
@@ -75,16 +70,8 @@ if __name__ == '__main__':
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
-                    print(inputs.size())
-                    # wrap them in Variable
                     if use_gpu:
-                        try:
-                            inputs, labels = Variable(inputs.float().cuda()),
-                            Variable(labels.long().cuda())
-                        except:
-                            print(inputs, labels)
-                    else:
-                        inputs, labels = Variable(inputs), Variable(labels)
+                        inputs, labels = inputs.cuda(), labels.cuda()
                     # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
                     optimizer.zero_grad()
                     outputs = model(inputs)
@@ -148,15 +135,17 @@ if __name__ == '__main__':
         return optimizer
 
 
-    model_ft = get_model()
+    model_ft = get_model("resnet")
     criterion = nn.CrossEntropyLoss()
-    if use_gpu:
-        criterion.cuda()
-        model_ft.cuda()
 
     optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.0001)
-
-
+    use_gpu = GPU_MODE
+    if use_gpu:
+        torch.cuda.set_device(CUDA_DEVICE)
+        criterion.cuda()
+        model_ft.cuda()
+        for inputs, labels in dset_loaders["train"]:
+            inputs, labels = inputs.cuda(), labels.cuda()
 
     # Run the functions and save the best model in the function model_ft.
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
