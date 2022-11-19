@@ -144,8 +144,6 @@ if __name__ == '__main__':
         torch.cuda.set_device(CUDA_DEVICE)
         criterion.cuda()
         model_ft.cuda()
-        for inputs, labels in dset_loaders["train"]:
-            inputs, labels = inputs.cuda(), labels.cuda()
 
     # Run the functions and save the best model in the function model_ft.
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
