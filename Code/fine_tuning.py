@@ -149,6 +149,8 @@ if __name__ == '__main__':
         model_ft.cuda()
 
     # Run the functions and save the best model in the function model_ft.
+    if os.path.exists("../Results/testresult.csv"):
+        os.remove("../Results/testresult.csv")
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                            num_epochs=200)
 
