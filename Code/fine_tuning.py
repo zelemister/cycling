@@ -19,10 +19,20 @@ from model_loaders import get_model
 # this file
 
 def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, running_corrects):
+    if not os.path.exists("../Results/testresult.csv"):
+        log = open("../Results/testresult.csv", "a")
+        lines = "epoch" + "," + "phase" + "," + "epoch_loss" + "," + "epoch_acc" + "\n"
+        log.writelines(lines)
+
     print('trying epoch loss')
     epoch_loss = running_loss / dset_sizes[phase]
     epoch_acc = running_corrects.item() / float(dset_sizes[phase])
-    pd.DataFrame(np.transpose(np.array([epoch, epoch_loss, epoch_acc])), columns=["epoch", "epoch_loss", "epoch_acc"])
+
+    a = np.transpose(pd.DataFrame(np.array([epoch, epoch_loss, epoch_acc])))
+    a.columns = ["epoch", "phase", "epoch_loss", "epoch_acc"]
+    new_obs = f"{epoch},{epoch_loss},{epoch_acc}\n"
+    log = open("../Results/testresult.csv", "a")
+    log.writelines(new_obs)
     return epoch_acc, epoch_loss
 
 
@@ -136,7 +146,7 @@ if __name__ == '__main__':
 
     # Run the functions and save the best model in the function model_ft.
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=2)
+                           num_epochs=50)
 
     # Save model
     torch.save(model_ft.state_dict(), "../Models/fine_tuned_best_model.pt")

@@ -1,6 +1,6 @@
 # Learning rate parameters
 BASE_LR = 0.001
-EPOCH_DECAY = 30 # number of epochs after which the Learning rate is decayed exponentially.
+EPOCH_DECAY = 20 # number of epochs after which the Learning rate is decayed exponentially.
 DECAY_WEIGHT = 0.1 # factor by which the learning rate is reduced.
 
 
@@ -14,6 +14,7 @@ BATCH_SIZE = 10 # Set as high as possible. If you keep it too high, you'll get a
 
 ### GPU SETTINGS
 CUDA_DEVICE = 0 # Enter device ID of your gpu if you want to run on gpu. Otherwise neglect.
+
 
 # SETTINGS FOR DISPLAYING ON TENSORBOARD
 USE_TENSORBOARD = 0 #if you want to use tensorboard set this to 1.
