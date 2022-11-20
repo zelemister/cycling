@@ -67,9 +67,9 @@ if __name__ == '__main__':
 
     def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
-
+        best_loss_epoch = 0
         best_model = model
-        best_loss = 0.0
+        best_loss = 100
 
         for epoch in range(num_epochs):
             print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -143,11 +143,14 @@ if __name__ == '__main__':
 
 
     model_ft = get_model("resnet")
-    criterion = nn.CrossEntropyLoss()
+    #criterion = nn.CrossEntropyLoss()
     #loss adaptation for imbalanced learning
-    # weights = [1,17]  # as class distribution. 1879 negativs, 110 positives.
-    #class_weights = torch.FloatTensor(weights).cuda()
-    # criterion = nn.CrossEntropyLoss(weight=class_weights)
+    weights = [1,17]  # as class distribution. 1879 negativs, 110 positives.
+    if torch.cuda.is_available():
+        class_weights = torch.FloatTensor(weights).cuda()
+    else:
+        class_weights = torch.FloatTensor(weights)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
 
     optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.0001)
     if torch.cuda.is_available():
@@ -158,7 +161,7 @@ if __name__ == '__main__':
     if os.path.exists("../Results/testresult.csv"):
         os.remove("../Results/testresult.csv")
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=200)
+                           num_epochs=100)
 
     # Save model
     torch.save(model_ft.state_dict(), "../Models/fine_tuned_best_model.pt")
