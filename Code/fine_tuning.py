@@ -20,6 +20,8 @@ from model_loaders import get_model
 
 def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, running_corrects):
     if not os.path.exists("../Results/testresult.csv"):
+        if not os.path.exits("../Results"):
+            os.mkdir("../Results")
         log = open("../Results/testresult.csv", "a")
         lines = "epoch" + "," + "phase" + "," + "epoch_loss" + "," + "epoch_acc" + "\n"
         log.writelines(lines)
