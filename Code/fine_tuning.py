@@ -27,7 +27,6 @@ def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, running_c
         log.writelines(lines)
         log.close()
 
-    print('trying epoch loss')
     epoch_loss = running_loss / dset_sizes[phase]
     epoch_acc = running_corrects.item() / float(dset_sizes[phase])
 
