@@ -3,3 +3,8 @@ the intern seems to have labeled not red- streets as bycylcle lanes apprarently?
 x101 is 0
 x1002xxx are both 1
 x_18040012.png is also 1
+
+Total Pictures in labeling_clean.csv: 1989
+Negatives: 1879
+Positives: 110
+Imbalance Ratio: approx. 1/17
