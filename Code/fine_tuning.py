@@ -67,7 +67,7 @@ if __name__ == '__main__':
 
     def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
-        best_loss_epoch = 0
+        best_loss_epoch = 1
         best_model = model
         best_loss = 100
 
@@ -115,9 +115,11 @@ if __name__ == '__main__':
                 if phase == 'val':
                     if epoch_loss < best_loss:
                         best_loss = epoch_loss
-                        best_model = copy.deepcopy(model)
                         print('new best loss is = ', best_loss)
                         best_loss_epoch = epoch
+
+                    if True:
+                        best_model = copy.deepcopy(model)
                     print(f"Best loss was found in epoch {best_loss_epoch}")
 
         time_elapsed = time.time() - since
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     model_ft = get_model("resnet")
     #criterion = nn.CrossEntropyLoss()
     #loss adaptation for imbalanced learning
-    weights = [1,17]  # as class distribution. 1879 negativs, 110 positives.
+    weights = [1, 17]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
     else:
