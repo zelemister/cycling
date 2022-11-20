@@ -37,7 +37,7 @@ def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, running_c
     log = open("../Results/testresult.csv", "a")
     log.writelines(new_obs)
     log.close()
-    return epoch_acc, epoch_loss
+    return epoch_loss, epoch_acc
 
 
 if __name__ == '__main__':
