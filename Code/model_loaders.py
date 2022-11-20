@@ -8,7 +8,7 @@ def get_model(model_name:str):
     #https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial
     num_classes = 2
     if model_name == "resnet":
-        model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+        model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_classes)
     elif model_name == "transformer":
