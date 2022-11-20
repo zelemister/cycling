@@ -1,4 +1,4 @@
-#from __future__ import print_function, division
+# from __future__ import print_function, division
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,25 +9,33 @@ from torchvision import datasets, models, transforms
 import time
 import copy
 import os
+import pandas as pd
 from PIL import ImageFile
 from fine_tuning_config_file import *
 from model_loaders import get_model
 
+
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
+
+def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, running_corrects):
+    print('trying epoch loss')
+    epoch_loss = running_loss / dset_sizes[phase]
+    epoch_acc = running_corrects.item() / float(dset_sizes[phase])
+    pd.DataFrame(np.transpose(np.array([epoch, epoch_loss, epoch_acc])), columns=["epoch", "epoch_loss", "epoch_acc"])
+    return epoch_acc, epoch_loss
+
+
 if __name__ == '__main__':
-    count = 0
 
     # If you want to read more, transforms is a function from torchvision, and you can go read more here - http://pytorch.org/docs/master/torchvision/transforms.html
     data_transforms = {
         'train': transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
+            transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'val': transforms.Compose([
-            transforms.Resize(224),
             transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
@@ -43,7 +51,8 @@ if __name__ == '__main__':
     dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
     dset_classes = dsets['train'].classes
 
-    def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=100):
+
+    def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
 
         best_model = model
@@ -56,21 +65,18 @@ if __name__ == '__main__':
             # Each epoch has a training and validation phase
             for phase in ['train', 'val']:
                 if phase == 'train':
-                    mode = 'train'
                     optimizer = lr_scheduler(optimizer, epoch)
                     model.train()  # Set model to training mode
                 else:
                     model.eval()
-                    mode = 'val'
 
                 running_loss = 0.0
                 running_corrects = 0
 
-                counter = 0
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
-                    if use_gpu:
+                    if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
                     # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
                     optimizer.zero_grad()
@@ -78,32 +84,17 @@ if __name__ == '__main__':
                     _, preds = torch.max(outputs.data, 1)
 
                     loss = criterion(outputs, labels)
-                    # print('loss done')
-                    # Just so that you can keep track that something's happening and don't feel like the program isn't running.
-                    # if counter%10==0:
-                    #     print("Reached iteration ",counter)
-                    counter += 1
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
-                        # print('loss backward')
                         loss.backward()
-                        # print('done loss backward')
                         optimizer.step()
-                        # print('done optim')
-                    # print evaluation statistics
                     try:
-                        # running_loss += loss.data[0]
                         running_loss += loss.item()
-                        # print(labels.data)
-                        # print(preds)
                         running_corrects += torch.sum(preds == labels.data)
-                        # print('running correct =',running_corrects)
                     except:
                         print('unexpected error, could not calculate loss or do a sum.')
-                print('trying epoch loss')
-                epoch_loss = running_loss / dset_sizes[phase]
-                epoch_acc = running_corrects.item() / float(dset_sizes[phase])
+                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, running_corrects)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
@@ -139,9 +130,7 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
 
     optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.0001)
-    use_gpu = GPU_MODE
-    if use_gpu:
-        torch.cuda.set_device(CUDA_DEVICE)
+    if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
 
