@@ -115,9 +115,11 @@ if __name__ == '__main__':
                 if phase == 'val':
                     if epoch_loss < best_loss:
                         best_loss = epoch_loss
-                        best_model = copy.deepcopy(model)
                         print('new best loss is = ', best_loss)
                         best_loss_epoch = epoch
+
+                    if True:
+                        best_model = copy.deepcopy(model)
                     print(f"Best loss was found in epoch {best_loss_epoch}")
 
         time_elapsed = time.time() - since
