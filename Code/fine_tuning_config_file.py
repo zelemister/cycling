@@ -9,7 +9,7 @@ NUM_CLASSES = 2 # set the number of classes in your dataset
 DATA_DIR = '../Data/bikelane'
 
 # DATALOADER PROPERTIES
-BATCH_SIZE = 32 # Set as high as possible. If you keep it too high, you'll get an out of memory error.
+BATCH_SIZE = 10 # Set as high as possible. If you keep it too high, you'll get an out of memory error.
 
 
 ### GPU SETTINGS
