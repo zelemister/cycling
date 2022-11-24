@@ -1,6 +1,10 @@
 library(png)
+
+#Legend: 0, no bikelane, 1 bikelane, 2 RIM, 3 unsure
+
+#set the paths correctly
 project_folder = "C:/Users/Daniel/PycharmProjects/cycling/"
-image_folder = paste0(project_folder, "/Example Images")
+image_folder = paste0(project_folder, "/Data")
 list = list.files(image_folder)
 
 #Daniel has to set to true
@@ -34,21 +38,20 @@ intern_labels_data = read.csv(intern_labels)
 
 
 for (image in random_list){
-  image_has_no_label = ifelse(is.na(steffen_labels_data[steffen_labels_data$Name==image,]$Label) | is.na(daniel_labels_data[daniel_labels_data$Name==image,]$Label), TRUE, FALSE)
+  image_has_no_label = ifelse(is.na(steffen_labels_data[steffen_labels_data$Name==image,]$Label) & is.na(daniel_labels_data[daniel_labels_data$Name==image,]$Label), TRUE, FALSE)
   image_has_no_label = image_has_no_label | ifelse(gsub("\\.png$", "", image) %in% intern_labels_data$Name, TRUE, FALSE)
   if (image_has_no_label){
     pp <- readPNG(paste0(image_folder, "/", image))
     plot.new() 
     rasterImage(pp,0,0,1,1)
-    input = readline(prompt = "0,1 or 2, exit to quit and save")
-    if (input %in% 0:2){
+    input = readline(prompt = "0,1,2,3 or quit ")
+    if (input %in% 0:3){
       class = input
       if (Daniel) daniel_labels_data[daniel_labels_data$Name == image,]$Label = class
       else steffen_labels_data[steffen_labels_data$Name == image,]$Label = class
-    }
-    else if (input=="exit") break
+    }else if (input=="quit") break
   }
 }
 
-if (Daniel) {write.csv(daniel_labels_data, daniel_labels, row.names = FALSE)
-}else write.csv(steffen_labels_data, steffen_labels, row.names = FALSE)
+write.csv(daniel_labels_data, daniel_labels, row.names = FALSE)
+write.csv(steffen_labels_data, steffen_labels, row.names = FALSE)
