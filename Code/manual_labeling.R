@@ -8,7 +8,7 @@ image_folder = paste0(project_folder, "/Data")
 list = list.files(image_folder)
 
 #Daniel has to set to true
-Daniel = FALSE
+Daniel = TRUE
 
 
 set.seed(12345)
