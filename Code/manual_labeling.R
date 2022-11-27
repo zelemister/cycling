@@ -38,9 +38,10 @@ intern_labels_data = read.csv(intern_labels)
 
 
 for (image in random_list){
-  image_has_no_label = ifelse(is.na(steffen_labels_data[steffen_labels_data$Name==image,]$Label) & is.na(daniel_labels_data[daniel_labels_data$Name==image,]$Label), TRUE, FALSE)
-  image_has_no_label = image_has_no_label | ifelse(gsub("\\.png$", "", image) %in% intern_labels_data$Name, TRUE, FALSE)
-  if (image_has_no_label){
+  image_has_label = !(is.na(steffen_labels_data[steffen_labels_data$Name==image,]$Label) & 
+                    is.na(daniel_labels_data[daniel_labels_data$Name==image,]$Label))
+  image_has_label = image_has_label | gsub("\\.png$", "", image) %in% intern_labels_data$Name
+  if (!image_has_label){
     pp <- readPNG(paste0(image_folder, "/", image))
     plot.new() 
     rasterImage(pp,0,0,1,1)
