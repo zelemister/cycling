@@ -44,12 +44,12 @@ if __name__ == '__main__':
     # If you want to read more, transforms is a function from torchvision, and you can go read more here - http://pytorch.org/docs/master/torchvision/transforms.html
     data_transforms = {
         'train': transforms.Compose([
-            transforms.CenterCrop(224),
+            transforms.CenterCrop(256),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
         'val': transforms.Compose([
-            transforms.CenterCrop(224),
+            transforms.CenterCrop(256),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ]),
