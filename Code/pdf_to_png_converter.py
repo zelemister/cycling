@@ -8,7 +8,7 @@ import os
 #code was used and modified from the internet:
 #https://pythonscholar.com/blog/extract-images-from-pdf-in-python/
 
-folder = "../Data"
+folder = "../Images"
 if not os.path.isdir(folder):
     os.mkdir(folder)
 os.chdir(folder)
