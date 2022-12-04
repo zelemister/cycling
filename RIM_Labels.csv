@@ -1,0 +1,34 @@
+﻿Join_Count,TARGET_FID,LZANR,"STANDORT,C,254",RIM,"address,C,254","lat,N,19,11","long,N,19,11","accuracy,C,254","NR,N,19,11","NR_STR,C,254"
+1,0,5,Isartorplatz / Zweibr├╝ckenstr.,1,Isartorplatz / Zweibr├╝ckensta├ƒe,48.13387080000,11.58277120000,intersection,26010124,26010124
+1,1,11,Franz-Joseph-/ Leopoldstr.,1,Franz-Josephsta├ƒe / Leopoldsta├ƒe,48.15728330000,11.58441400000,intersection,19010020,19010020
+1,2,14,Herzog-Heinrich-/ Lindwurmstr.,1,Herzog-Heinrichsta├ƒe / Lindwurmsta├ƒe,48.12837550000,11.55595350000,intersection,25010040,25010040
+1,3,15,Orleans-/ Rosenheimer Str.,2,Orleanssta├ƒe / Rosenheimer Stra├ƒe,48.12522730000,11.59945650000,intersection,26040021,26040021
+1,4,19,Lindwurm-/ Plinganserstr.,1,Lindwurmsta├ƒe / Plingansersta├ƒe,48.12161930000,11.54105990000,intersection,24040045,24040045
+1,5,26,Grasser-/ Landsberger Str.,1,Grassersta├ƒe / Landsberger Stra├ƒe,48.13931500000,11.54712120000,intersection,18030037,18030037
+1,7,45,An der Hauptfeuerwache / Oberanger,1,An der Hauptfeuerwache / Oberanger,48.13352890000,11.56835800000,intersection,25020130,25020130
+1,8,61,Kapuziner-/ Pestalozzistr.,1,Kapuzinersta├ƒe / Pestalozzista├ƒe,48.12439760000,11.56416990000,intersection,25040040,25040040
+1,9,72,Luisen-/ Theresienstr.,1,Luisensta├ƒe / Theresiensta├ƒe,48.15040360000,11.56679620000,intersection,18020087,18020087
+1,10,73,Gabelsberger-/ Luisenstr.,1,Gabelsbergersta├ƒe / Luisensta├ƒe,48.14833480000,11.56545920000,intersection,18040026,18040026
+1,11,91,Hohenzollern-/ Schlei├ƒheimer Str.,1,Hohenzollernsta├ƒe / Schlei├ƒheimer Stra├ƒe,48.16093410000,11.56352550000,intersection,11040068,11040068
+1,12,93,Kapuzinerplatz,2,Kapuzinerplatz,48.12639250000,11.55838740000,route,25040045,25040045
+1,15,203,Blumen-/ Corneliusstr.,1,Blumensta├ƒe / Corneliussta├ƒe,48.13346760000,11.57356870000,intersection,26010141,26010141
+1,16,239,Karl-Scharnagl-Ring / Maximilianstr.,1,Karl-Scharnagl-Ring / Maximiliansta├ƒe,48.13855940000,11.58471920000,intersection,26010165,26010165
+1,17,254,Innsbrucker Ring / Ottobrunner Str.,1,Innsbrucker Ring / Ottobrunner Stra├ƒe,48.11311900000,11.61632880000,intersection,34010032,34010032
+1,18,311,Lilienstr./ Mariahilfplatz,2,Liliensta├ƒe/ Mariahilfplatz,48.12649800000,11.58355940000,intersection,26030040,26030040
+1,19,323,Einstein-/ Flurstr.,1,Einsteinsta├ƒe / Flursta├ƒe,48.13555530000,11.60532160000,intersection,27010067,27010067
+1,20,329,Hultschiner-/ Truderinger Str.,1,Hultschinersta├ƒe / Truderinger Stra├ƒe,48.13615990000,11.63374290000,intersection,27020002,27020002
+1,21,359,Baierbrunner Str./ Siemensallee,1,Baierbrunner Stra├ƒe/ Siemensallee,48.09060430000,11.52938810000,intersection,38020016,38020016
+1,22,374,Frauenstr./ Isartorplatz,1,Frauensta├ƒe/ Isartorplatz,48.13475800000,11.58191720000,intersection,26010112,26010112
+1,23,398,Bajuwaren-/ Kreillerstr.,1,Bajuwarensta├ƒe / Kreillersta├ƒe,48.12143790000,11.66478610000,intersection,28040048,28040048
+1,24,449,Krokus-/ Silberdistelstr.,1,Krokussta├ƒe / Silberdistelsta├ƒe,48.12585770000,11.47951010000,intersection,23030052,23030052
+1,25,457,Blumen-/ Papa-Schmid-Str.,1,Blumensta├ƒe / Papa-Schmid-Stra├ƒe,48.13190600000,11.57090430000,intersection,25020051,25020051
+1,26,470,Rennbahn-/ Riemer Str.,1,Rennbahnsta├ƒe / Riemer Stra├ƒe,48.14056090000,11.66208460000,intersection,21040041,21040041
+1,27,478,Kaiser-Ludwig-Platz,2,Kaiser-Ludwig-Platz,48.13213370000,11.55577330000,town_square,25010107,25010107
+1,28,480,Elisenstr./ Lenbachplatz,1,Elisensta├ƒe/ Lenbachplatz,48.14041810000,11.56692070000,intersection,18040014,18040014
+1,29,618,Blumenauer-/ Terofalstr.,1,Blumenauersta├ƒe / Terofalsta├ƒe,48.12563820000,11.47539930000,intersection,22040015,22040015
+1,30,675,Baumkirchner-/ Truderinger Str.,1,Baumkirchnersta├ƒe / Truderinger Stra├ƒe,48.13326730000,11.63270550000,intersection,27020008,27020008
+1,31,676,Aubinger-/ Radolfzeller Str.,1,Aubingersta├ƒe / Radolfzeller Stra├ƒe,48.15073300000,11.43557990000,intersection,80020046,80020046
+1,32,717,Bavariaring / R├╝ckertstr.,1,Bavariaring / R├╝ckertsta├ƒe,48.13382990000,11.55345730000,intersection,25010036,25010036
+1,33,727,Auerfeld-/ Welfenstr.,1,Auerfeldsta├ƒe / Welfensta├ƒe,48.12335610000,11.59504010000,intersection,26040033,26040033
+1,34,735,Augusten-/ Theresienstr.,1,Augustensta├ƒe / Theresiensta├ƒe,48.15113020000,11.56421960000,intersection,18020085,18020085
+1,35,1291,Truderinger Str. / Bajuwarenstr.,1,Truderinger Stra├ƒe / Bajuwarensta├ƒe,48.12397830000,11.66678010000,intersection,28040029,28040029
