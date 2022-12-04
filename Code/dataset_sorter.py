@@ -26,7 +26,6 @@ labels = pandas.read_csv("../labeling_clean.csv")
 #labels_d = pandas.read_csv("../labeling_daniel.csv")
 labels_s = pandas.read_csv("../labeling_steffen.csv")
 
-"""
 #sort Images into the dataset
 for image in os.listdir(images):
     label = -1
@@ -46,7 +45,6 @@ for image in os.listdir(images):
             shutil.copyfile(images+"/"+image, bike_folder + "/val/" + str(label) + "/" + image)
         else:
             shutil.copyfile(images+"/"+image, bike_folder + "/train/" + str(label)+ "/" + image)
-"""
 
 
 rims = pandas.read_csv(os.path.join("..", "RIM_Labels.csv"))

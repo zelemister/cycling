@@ -8,6 +8,7 @@ from torchvision.utils import save_image
 image_folder = "../Data/bikelane"
 c = 0
 random.seed(1234)
+torch.random.seed(1234)
 rotate = transforms.Compose([transforms.ToTensor(),
                              #generate a random number between 0 and 1, then multiply by 360 for a random number between 0 and 360
                              transforms.RandomRotation(degrees=random.random(1)[0]*360),
@@ -15,7 +16,6 @@ rotate = transforms.Compose([transforms.ToTensor(),
                              transforms.RandomVerticalFlip()])
 
 
-random.seed(1234)
 factor = 10
 for root, dirs, files in os.walk(image_folder):
     if root.endswith("1"):
