@@ -50,10 +50,11 @@ for image in os.listdir(images):
 rims = pandas.read_csv(os.path.join("..", "RIM_Labels.csv"))
 for intersection in rims["NR_STR,C,254"]:
     file_name = "x_" + str(intersection) + ".png"
-    if random.random() < 0.2:
-        shutil.copyfile(os.path.join(images, file_name), os.path.join(rim_folder, "val", "1", file_name))
-    else:
-        shutil.copyfile(os.path.join(images, file_name), os.path.join(rim_folder, "train", "1", file_name))
+    if os.path.exists(os.path.join(images, file_name)):
+        if random.random() < 0.2:
+            shutil.copyfile(os.path.join(images, file_name), os.path.join(rim_folder, "val", "1", file_name))
+        else:
+            shutil.copyfile(os.path.join(images, file_name), os.path.join(rim_folder, "train", "1", file_name))
 
 
 """for i in range(labels.__len__()):
