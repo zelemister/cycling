@@ -1,5 +1,4 @@
 set.seed(9271755)
-
 dir.create("train")
 dir.create("test")
 file_names <- list.files("Images", full.names = TRUE)
