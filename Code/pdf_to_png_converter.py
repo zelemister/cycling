@@ -29,5 +29,5 @@ for index, name in enumerate(os.listdir("../PDFs"), start=1):
     # load it to PIL
     image = Image.open(io.BytesIO(image_bytes))
     # save it to local disk
-    image.save(f"{folder}/{name_raw}.{image_ext}")
+    image.save(f"{name_raw}.{image_ext}")
     print(f"Added file {index}/{total_num}; {name_raw}.{image_ext}")
