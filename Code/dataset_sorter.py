@@ -5,7 +5,11 @@ import random
 from math import isnan
 #this dataset sorter seems to be necessary, since apparently
 random.seed(123456)
-images = "../Images"
+
+if os.path.exists("../train"):
+    images="../train"
+else: images = "../Images"
+
 folder = "../Data"
 if not os.path.exists(folder):
     os.mkdir(folder)
