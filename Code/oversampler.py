@@ -23,7 +23,6 @@ rotate = transforms.Compose([transforms.ToTensor(),
 
 factor = 10
 for root, dirs, files in os.walk(image_folder):
-    print("bla")
     if root.endswith("1"):
         for file in files:
             image = PIL.Image.open(os.path.join(root, file))
