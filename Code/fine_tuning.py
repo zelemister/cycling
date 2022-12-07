@@ -13,7 +13,7 @@ import pandas as pd
 from PIL import ImageFile
 from fine_tuning_config_file import *
 from model_loaders import get_model
-
+from numpy import random
 
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
@@ -143,6 +143,14 @@ if __name__ == '__main__':
 
         return optimizer
 
+
+    seed = 12345
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
 
     model_ft = get_model("resnet")
     #criterion = nn.CrossEntropyLoss()
