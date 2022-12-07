@@ -7,7 +7,7 @@ DECAY_WEIGHT = 0.1 # factor by which the learning rate is reduced.
 # DATASET INFO
 NUM_CLASSES = 2 # set the number of classes in your dataset
 DATA_DIR = '../Data/bikelane'
-
+RIM_DIR = "../Data/rim"
 # DATALOADER PROPERTIES
 BATCH_SIZE = 64 # Set as high as possible. If you keep it too high, you'll get an out of memory error.
 
