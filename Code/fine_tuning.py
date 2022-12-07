@@ -147,7 +147,7 @@ if __name__ == '__main__':
     model_ft = get_model("resnet")
     #criterion = nn.CrossEntropyLoss()
     #loss adaptation for imbalanced learning
-    weights = [1, 17]  # as class distribution. 1879 negativs, 110 positives.
+    weights = [1, 2]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
     else:
