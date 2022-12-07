@@ -152,7 +152,7 @@ if __name__ == '__main__':
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
-    model_ft = get_model("resnet")
+    model_ft = get_model("resnet", pretrained=False)
     #criterion = nn.CrossEntropyLoss()
     #loss adaptation for imbalanced learning
     weights = [1, 2]  # as class distribution. 1879 negativs, 110 positives.
