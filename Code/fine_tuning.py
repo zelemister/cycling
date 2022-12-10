@@ -5,7 +5,7 @@ import torch.optim as optim
 from torch.autograd import Variable
 import numpy as np
 import torchvision
-from torchvision import datasets, models, transforms
+from torchvision import datasets, transforms
 import time
 import copy
 import os
@@ -14,24 +14,25 @@ from PIL import ImageFile
 from fine_tuning_config_file import *
 from model_loaders import get_model
 from numpy import random
-
+from sklearn.metrics import confusion_matrix
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
-def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, running_corrects):
+def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix):
     if not os.path.exists("../Results/testresult.csv"):
         if not os.path.exists("../Results"):
             os.mkdir("../Results")
         log = open("../Results/testresult.csv", "a")
-        lines = "epoch" + "," + "phase" + "," + "epoch_loss" + "," + "epoch_acc" + "\n"
+        lines = "epoch"+","+"phase"+","+"epoch_loss"+","+"tn"+","+"fp"+","+"fn"+","+"tp" + "\n"
         log.writelines(lines)
         log.close()
-
+    tn, fp, fn, tp = c_matrix.ravel()
     epoch_loss = running_loss / dset_sizes[phase]
-    epoch_acc = running_corrects.item() / float(dset_sizes[phase])
+    epoch_acc = (tp + tn)/(tn+tp+fp+fn)
 
-    a = np.transpose(pd.DataFrame(np.array([epoch, phase, epoch_loss, epoch_acc])))
-    a.columns = ["epoch", "phase", "epoch_loss", "epoch_acc"]
+
+    a = np.transpose(pd.DataFrame(np.array([epoch, phase, epoch_loss, tn, fp, fn, tp])))
+    a.columns = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
     new_obs = f"{epoch},{phase},{epoch_loss},{epoch_acc}\n"
     log = open("../Results/testresult.csv", "a")
     log.writelines(new_obs)
@@ -89,6 +90,8 @@ if __name__ == '__main__':
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
+                    #those are needed, since I need the labels on cpu RAM, to compute the confusion matrix.
+                    cpu_labels= copy.deepcopy(labels)
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
                     # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
@@ -102,12 +105,9 @@ if __name__ == '__main__':
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                    try:
-                        running_loss += loss.item()
-                        running_corrects += torch.sum(preds == labels.data)
-                    except:
-                        print('unexpected error, could not calculate loss or do a sum.')
-                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, running_corrects)
+                    running_loss += loss.item()
+                    c_matrix= confusion_matrix(labels.data, preds)
+                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
@@ -149,7 +149,6 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     random.seed(seed)
-    torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
     model_ft = get_model("resnet", pretrained=False)
