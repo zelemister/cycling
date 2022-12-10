@@ -33,7 +33,7 @@ def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix)
 
     a = np.transpose(pd.DataFrame(np.array([epoch, phase, epoch_loss, tn, fp, fn, tp])))
     a.columns = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
-    new_obs = f"{epoch},{phase},{epoch_loss},{epoch_acc}\n"
+    new_obs = f"{epoch},{phase},{epoch_loss},{tn},{fp},{fn},{tp},\n"
     log = open("../Results/testresult.csv", "a")
     log.writelines(new_obs)
     log.close()
