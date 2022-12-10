@@ -106,7 +106,7 @@ if __name__ == '__main__':
                         loss.backward()
                         optimizer.step()
                     running_loss += loss.item()
-                    c_matrix= confusion_matrix(labels.data, preds)
+                    c_matrix= confusion_matrix(cpu_labels, preds)
                 epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
