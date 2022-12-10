@@ -12,7 +12,6 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 random.seed(seed)
-torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 rotate = transforms.Compose([transforms.ToTensor(),
                              #generate a random number between 0 and 1, then multiply by 360 for a random number between 0 and 360
@@ -23,14 +22,14 @@ rotate = transforms.Compose([transforms.ToTensor(),
 
 factor = 10
 for root, dirs, files in os.walk(image_folder):
-    if root.endswith("1"):
+    if root.endswith("train/1"):
         for file in files:
             image = PIL.Image.open(os.path.join(root, file))
             oversampled_list = list(map(rotate, [image]*factor))
             for i in range(factor):
                 save_image(oversampled_list[i],  os.path.join(root, file[0:-4] + "_" + str(i) + ".png"))
             os.remove(os.path.join(root, file))
-    elif root.endswith("0"):
+    elif root.endswith("0") or root.endswith("val/1"):
         for file in files:
             image = PIL.Image.open(os.path.join(root, file))
             alt_image = rotate(image)
