@@ -14,7 +14,7 @@ from torch.nn import Linear
 from PIL import Image
 #import torchvision.transforms as T
 from torchvision.transforms import Compose, Resize, CenterCrop
-from torchvision.transforms import ToTensor, Normalize
+from torchvision.transforms import ToTensor, Normalize, ToPILImage
 from torchvision.models import resnet18
 from zennit.attribution import Gradient, SmoothGrad
 from zennit.core import Stabilizer
@@ -59,7 +59,7 @@ image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
 
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]
-data_PIL = T.ToPILImage(data)
+data_PIL = ToPILImage(data)
 #print(data.shape)
 #print(data_PIL)
 # display the resized and cropped image
