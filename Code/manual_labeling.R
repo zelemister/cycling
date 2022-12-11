@@ -3,12 +3,13 @@ library(png)
 #Legend: 0, no bikelane, 1 bikelane, 2 RIM, 3 unsure
 
 #set the paths correctly
-project_folder = "C:/Users/Daniel/PycharmProjects/cycling/"
+#project_folder = "C:/Users/Daniel/PycharmProjects/cycling/"
+project_folder = "D:/PycharmProjects/cycling/"
 image_folder = paste0(project_folder, "/Data")
 list = list.files(image_folder)
 
 #Daniel has to set to true
-Daniel = TRUE
+Daniel = FALSE
 
 
 set.seed(12345)

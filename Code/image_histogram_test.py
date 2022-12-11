@@ -13,6 +13,8 @@ from colormath.color_diff import delta_e_cie2000
 
 
 def distance_to_red(color_bgr):
+    #curently unused
+    #exploring different colour representations according to human eye
     reference = sRGBColor(1.0, 0.0, 0.0)
     reference_lab = convert_color(reference, LabColor)
 
@@ -39,9 +41,9 @@ def is_pretty_gray(color_bgr):
 # print(img.size)
 
 # need image type converted to matrix. channel 0=blue, 1=green, 2=red
-# img_cv = cv2.imread("../Example Images/x_18040012.png")
+img_cv = cv2.imread("../Example Images/x_18040012.png")
 # img_cv = cv2.imread("../Example Images/x_10020034.png")
-img_cv = cv2.imread("../Example Images/x_1010001.png")
+#img_cv = cv2.imread("../Example Images/x_1010001.png")
 
 
 def classify_colors(img_cv):

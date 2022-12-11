@@ -85,13 +85,11 @@ if __name__ == '__main__':
                     model.eval()
 
                 running_loss = 0.0
-                c_matrix = 0
+                running_corrects = 0
 
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
-                    #those are needed, since I need the labels on cpu RAM, to compute the confusion matrix.
-                    cpu_labels= copy.deepcopy(labels)
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
                     # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
@@ -105,9 +103,12 @@ if __name__ == '__main__':
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                    running_loss += loss.item()
-                    c_matrix += confusion_matrix(cpu_labels, preds.cpu())
-                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix)
+                    try:
+                        running_loss += loss.item()
+                        running_corrects += torch.sum(preds == labels.data)
+                    except:
+                        print('unexpected error, could not calculate loss or do a sum.')
+                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, running_corrects)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
@@ -144,17 +145,10 @@ if __name__ == '__main__':
         return optimizer
 
 
-    seed = 12345
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-    random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-
-    model_ft = get_model("resnet", pretrained=False)
+    model_ft = get_model("resnet")
     #criterion = nn.CrossEntropyLoss()
     #loss adaptation for imbalanced learning
-    weights = [1, 2]  # as class distribution. 1879 negativs, 110 positives.
+    weights = [1, 17]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
     else:

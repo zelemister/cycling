@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 from PIL._imaging import display
 from torch.nn import Linear
 from PIL import Image
-import torchvision.transforms as T
+#import torchvision.transforms as T
 from torchvision.transforms import Compose, Resize, CenterCrop
-from torchvision.transforms import ToTensor, Normalize, ToPILImage
+from torchvision.transforms import ToTensor, Normalize
 from torchvision.models import resnet18
 from zennit.attribution import Gradient, SmoothGrad
 from zennit.core import Stabilizer
@@ -25,14 +25,15 @@ from zennit.rules import Epsilon, ZPlus, ZBox, Norm, Pass, Flat
 from zennit.types import Convolution, Activation, AvgPool, Linear as AnyLinear
 from zennit.types import BatchNorm, MaxPool
 from zennit.torchvision import ResNetCanonizer
-
+"""
 torch.hub.download_url_to_file(
     'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/2006_09_06_180_Leuchtturm.jpg/640px-2006_09_06_181_Leuchtturm.jpg',
-    'dornbusch-lighthouse.jpg',
+    '../Example Images/dornbusch-lighthouse.jpg',
 )
-
+"""
 def show(imgs):
-    #function to plot a list of tensor images
+    #function to plot a list of tensor images from pytorch tut
+    #unused
     fix, axs = plt.subplots(ncols=len(imgs), squeeze=False)
     for i, img in enumerate(imgs):
         img = T.ToPILImage()(img.to('cpu'))
@@ -54,15 +55,15 @@ transform = Compose([
 ])
 
 # load the image
-image = Image.open('dornbusch-lighthouse.jpg')
+image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
 
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]
-data_PIL = ToPILImage(data)
-print(data.shape)
+data_PIL = T.ToPILImage(data)
+#print(data.shape)
+#print(data_PIL)
 # display the resized and cropped image
-print(data_PIL)
-show(data)
+data_PIL.show()
 
 # load the model and set it to evaluation mode
 # model = resnet18(weights=None).eval()
@@ -98,4 +99,5 @@ relevance = attribution.sum(1)
 img = imgify(relevance, symmetric=True, cmap='coldnhot')
 
 # show the image
-#display(transform_img(image)) #diplay seems to be a jupyter notebook function
+#display(transform_img(img)) #diplay seems to be a jupyter notebook function
+img.show()
