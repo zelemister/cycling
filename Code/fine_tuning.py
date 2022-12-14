@@ -66,7 +66,7 @@ if __name__ == '__main__':
             print('-' * 10)
 
             # Each epoch has a training and validation phase
-            for phase in ['val']:
+            for phase in ['train','val']:
                 if phase == 'train':
                     optimizer = lr_scheduler(optimizer, epoch)
                     model.train()  # Set model to training mode
