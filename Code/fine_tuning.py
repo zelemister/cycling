@@ -32,10 +32,10 @@ def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix)
     if os.path.exists(folder + "/metrics.csv"):
         log = pd.read_csv(folder + "/metrics.csv")
         log.loc[len(log)]=new_row
+        os.remove(folder + "/metrics.csv")
     else:
         log = pd.DataFrame({fields[i]:new_row[i] for i in range(len(fields))}, index=[0])
 
-    os.remove(folder + "/metrics.csv")
     log.to_csv(folder + "/metrics.csv")
     return epoch_loss, epoch_acc
 
