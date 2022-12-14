@@ -32,7 +32,7 @@ torch.hub.download_url_to_file(
     'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/2006_09_06_180_Leuchtturm.jpg/640px-2006_09_06_181_Leuchtturm.jpg',
     '../Example Images/dornbusch-lighthouse.jpg',
 )
-Testbild Leuchtturm. Beispiel RIM: 18030025
+Testbild Leuchtturm. Beispiel RIM: x_18030025
 """
 """
 def show(imgs):
@@ -60,7 +60,8 @@ transform = Compose([
 ])
 
 # load the image
-image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
+# image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
+image = Image.open('../Images/x_18030025.png')
 
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]
@@ -89,7 +90,7 @@ low, high = transform_norm(torch.tensor([[[[[0.]]] * 3], [[[[1.]]] * 3]]))
 composite = EpsilonGammaBox(low=low, high=high, canonizers=[canonizer])
 
 # choose a target class for the attribution (label 437 is lighthouse)
-target = torch.eye(1000)[[437]]
+target = torch.eye(2)[[1]]
 
 # create the attributor, specifying model and composite
 with Gradient(model=model, composite=composite) as attributor:

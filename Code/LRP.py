@@ -72,10 +72,10 @@ data = transform(image)[None]
 
 # load the model and set it to evaluation mode
 # model = resnet18(weights=None).eval()
-# model = resnet18().eval()
-model = get_model("resnet", pretrained=False)
-model.load_state_dict(torch.load("../Models" + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
-model = model.eval()
+model = resnet18().eval()
+#model = get_model("resnet", pretrained=False)
+#model.load_state_dict(torch.load("../Models" + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
+#model = model.eval()
 
 # use the ResNet-specific canonizer
 canonizer = ResNetCanonizer()
