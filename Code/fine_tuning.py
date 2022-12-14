@@ -22,7 +22,7 @@ from overlooked_images import generate_falsepositive_list
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
-def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix, folder):
+def compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix, folder):
     tn, fp, fn, tp = c_matrix.ravel()
     epoch_loss = running_loss / dset_sizes[phase]
     epoch_acc = (tp + tn) / (tn + tp + fp + fn)
@@ -66,7 +66,7 @@ if __name__ == '__main__':
             print('-' * 10)
 
             # Each epoch has a training and validation phase
-            for phase in ['train','val']:
+            for phase in ['train', 'val']:
                 if phase == 'train':
                     optimizer = lr_scheduler(optimizer, epoch)
                     model.train()  # Set model to training mode
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                         optimizer.step()
                     running_loss += loss.item()
                     c_matrix += confusion_matrix(cpu_labels, preds.cpu())
-                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix, folder=folder)
+                epoch_loss, epoch_acc = compute_measures(epoch=epoch,phase= phase,dset_sizes= dset_sizes,running_loss= running_loss,c_matrix= c_matrix, folder=folder)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
