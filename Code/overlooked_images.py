@@ -1,6 +1,7 @@
 from fine_tuning_config_file import *
 from Code.model_loaders import get_model
 from torchvision import datasets, transforms
+from Code.transformations import get_transformer
 import os
 from PIL import Image
 import numpy.random as random
@@ -19,40 +20,42 @@ Then we take those labels where the prediction is 0, even though the label is 1,
 This might also just take the "worst" predictions, aka, those where the model is the most certain that the picture is 0
 even though it's one.
 """
-folder = "../Data/bikelane/val/1"
+
+def generate_falsepositive_list(task:str, destination:str):
+    if task == "bikelane":
+        folder = "../Data/bikelane/val/1"
+    elif task == "rim":
+        folder = "../Data/rim/val/1"
+
+    normalize = get_transformer("normalize_256")
+
+    #read model
+    model = get_model("resnet", pretrained=False)
+    model.load_state_dict(torch.load(destination + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
+    model.eval()
 
 
-#this transformation is a copy from fine_tuning.py, this needs to be cleaned up, so that
-#we don't get an accident when we change one, but not the other
-normalize= transforms.Compose([
-            transforms.CenterCrop(256),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
+    list=pd.DataFrame({"Name": [], "prob": []})
 
-model = get_model("resnet", pretrained=False)
-model.load_state_dict(torch.load("../Models/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
-model.eval()
-list=pd.DataFrame({"Name": [], "prob": []})
-for file in os.listdir(folder):
-    img=Image.open(os.path.join(folder, file))
-    norm_img=normalize(img)
+    #read in image, normalize it and run it through model
+    for file in os.listdir(folder):
+        img=Image.open(os.path.join(folder, file))
+        norm_img=normalize(img)
 
-    #model only take batches, and apparently unsqueeze does create a batch of length 1
-    norm_img= norm_img.unsqueeze(0)
-    with torch.no_grad():
-        out=model(norm_img)
+        #model only take batches, and apparently unsqueeze does create a batch of length 1
+        norm_img= norm_img.unsqueeze(0)
+        with torch.no_grad():
+            out = model(norm_img)
 
-    #this should convert modeloutput into probabilities, strip one layer of lists that accumulate,
-    #and then take the second element, which should be the prob for label 1
-    one_pred=torch.softmax(out,1)[0][1]
+        #this should convert modeloutput into probabilities, strip one layer of lists that accumulate,
+        #and then take the second element, which should be the prob for label 1
+        one_pred=torch.softmax(out,1)[0][1]
 
-    #this should take the higher value, and return the index of that value, if the
-    #index = 1, this means that it's the second class(1) if it's 0, that means it's the
-    #first class(0)
-    pred_label=torch.max(out, 1)[1]
-    if pred_label==0:
-        list.loc[len(list)]= [file, one_pred.item()]
+        #this should take the higher value, and return the index of that value, if the
+        #index = 1, this means that it's the second class(1) if it's 0, that means it's the
+        #first class(0)
+        pred_label=torch.max(out, 1)[1]
+        if pred_label==0:
+            list.loc[len(list)]= [file, one_pred.item()]
 
-
-print(list)
+    list.to_csv(destination + "overlooked_images.csv")
