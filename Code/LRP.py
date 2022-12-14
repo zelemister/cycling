@@ -3,7 +3,7 @@
 #https://github.com/chr5tphr/zennit
 #Tutorial: https://zennit.readthedocs.io/en/latest/tutorial/image-classification-vgg-resnet.html
 
-#Aim: create heatmap of model precitions and analyze false positives
+#Aim: create heatmap of model predicitions and analyze false positives
 
 import torch
 import numpy as np
@@ -25,20 +25,25 @@ from zennit.rules import Epsilon, ZPlus, ZBox, Norm, Pass, Flat
 from zennit.types import Convolution, Activation, AvgPool, Linear as AnyLinear
 from zennit.types import BatchNorm, MaxPool
 from zennit.torchvision import ResNetCanonizer
+from model_loaders import get_model
+
 """
 torch.hub.download_url_to_file(
     'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/2006_09_06_180_Leuchtturm.jpg/640px-2006_09_06_181_Leuchtturm.jpg',
     '../Example Images/dornbusch-lighthouse.jpg',
 )
+Testbild Leuchtturm. Beispiel RIM: 18030025
+"""
 """
 def show(imgs):
-    #function to plot a list of tensor images from pytorch tut
+    #function to plot a list of tensor images from pytorch tutorial
     #unused
     fix, axs = plt.subplots(ncols=len(imgs), squeeze=False)
     for i, img in enumerate(imgs):
         img = T.ToPILImage()(img.to('cpu'))
         axs[0, i].imshow(np.asarray(img))
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
+"""
 
 # define the base image transform
 transform_img = Compose([
@@ -59,16 +64,18 @@ image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
 
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]
-data_PIL = ToPILImage(data)
 #print(data.shape)
 #print(data_PIL)
 # display the resized and cropped image
-data_PIL.show()
+#data_PIL = ToPILImage()(data) #only works with unbatched data = transform(image)
+#data_PIL.show()
 
 # load the model and set it to evaluation mode
 # model = resnet18(weights=None).eval()
-model = resnet18().eval()
-
+# model = resnet18().eval()
+model = get_model("resnet", pretrained=False)
+model.load_state_dict(torch.load("../Models" + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
+model = model.eval()
 
 # use the ResNet-specific canonizer
 canonizer = ResNetCanonizer()
