@@ -21,7 +21,7 @@ This might also just take the "worst" predictions, aka, those where the model is
 even though it's one.
 """
 
-def generate_falsepositive_list(task:str, destination:str):
+def generate_falsepositive_list(task:str, destination:str, model):
     if task == "bikelane":
         folder = "../Data/bikelane/val/1"
     elif task == "rim":
@@ -30,8 +30,6 @@ def generate_falsepositive_list(task:str, destination:str):
     normalize = get_transformer("normalize_256")
 
     #read model
-    model = get_model("resnet", pretrained=False)
-    model.load_state_dict(torch.load(destination + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
     model.eval()
 
 

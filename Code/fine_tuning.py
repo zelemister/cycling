@@ -61,9 +61,8 @@ if __name__ == '__main__':
         best_loss_epoch = 1
         best_model = model
         best_loss = 100
-        #asdf
         for epoch in range(num_epochs):
-            print('Epoch {}/{}'.format(epoch, num_epochs - 1))
+            print('Epoch {}/{}'.format(epoch+1, num_epochs - 1))
             print('-' * 10)
 
             # Each epoch has a training and validation phase
@@ -167,10 +166,10 @@ if __name__ == '__main__':
         model_ft.cuda()
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=100)
+                           num_epochs=4)
 
     # Save model
     torch.save(model_ft.state_dict(), folder +"/fine_tuned_best_model.pt")
 
     #save the false positives
-    generate_falsepositive_list("bikelane", folder)
+    generate_falsepositive_list("bikelane", folder, model_ft)
