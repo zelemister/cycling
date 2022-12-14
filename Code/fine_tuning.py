@@ -148,8 +148,8 @@ if __name__ == '__main__':
     folder="../Results/"+time.strftime("%Y%m%d%H%M%S", time.localtime())
     if not os.path.exists(os.path.split(folder)[0]):
         os.mkdir(os.path.split(folder)[0])
-    if not os.path.exists(os.path.split(folder)[1]):
-        os.mkdir(os.path.split(folder)[1])
+    if not os.path.exists(folder):
+        os.mkdir(folder)
 
 
 
