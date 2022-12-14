@@ -6,7 +6,7 @@ from torch.autograd import Variable
 import numpy as np
 import torchvision
 from torchvision import datasets
-from Code.transformations import get_transformer
+from transformations import get_transformer
 import time
 import copy
 import os
@@ -16,7 +16,7 @@ from fine_tuning_config_file import *
 from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix
-from Code.overlooked_images import generate_falsepositive_list
+from overlooked_images import generate_falsepositive_list
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
