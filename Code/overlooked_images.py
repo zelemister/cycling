@@ -30,6 +30,7 @@ def generate_falsepositive_list(task:str, destination:str, model):
     normalize = get_transformer("normalize_256")
 
     #read model
+    model.cpu()
     model.eval()
 
 
