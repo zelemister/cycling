@@ -167,7 +167,7 @@ if __name__ == '__main__':
         model_ft.cuda()
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=5)
+                           num_epochs=4)
 
     # Save model
     torch.save(model_ft.state_dict(), folder +"/fine_tuned_best_model.pt")
