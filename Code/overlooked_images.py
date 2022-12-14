@@ -1,7 +1,7 @@
 from fine_tuning_config_file import *
-from Code.model_loaders import get_model
+from model_loaders import get_model
 from torchvision import datasets, transforms
-from Code.transformations import get_transformer
+from transformations import get_transformer
 import os
 from PIL import Image
 import numpy.random as random
