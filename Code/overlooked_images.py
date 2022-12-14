@@ -56,4 +56,4 @@ def generate_falsepositive_list(task:str, destination:str, model):
         if pred_label==0:
             list.loc[len(list)]= [file, one_pred.item()]
 
-    list.to_csv(destination + "overlooked_images.csv")
+    list.to_csv(destination + "/overlooked_images.csv")

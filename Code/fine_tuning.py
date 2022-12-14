@@ -17,25 +17,25 @@ from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix
 from overlooked_images import generate_falsepositive_list
+
+
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
-def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix):
+def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix, folder):
     tn, fp, fn, tp = c_matrix.ravel()
     epoch_loss = running_loss / dset_sizes[phase]
-    epoch_acc = (tp + tn)/(tn+tp+fp+fn)
-    fields=["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
-    new_row=[epoch, phase, epoch_loss, tn, fp, fn, tp]
-
-
-
-    if os.path.exists(folder + "/metrics.csv"):
-        log = pd.read_csv(folder + "/metrics.csv")
-        log.loc[len(log)]=new_row
+    epoch_acc = (tp + tn) / (tn + tp + fp + fn)
+    fields = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
+    new_row = [epoch, phase, epoch_loss, tn, fp, fn, tp]
+    log_path = os.path.join(folder, "metrics.csv")
+    if os.path.exists(log_path):
+        log = pd.read_csv(log_path)
+        log.loc[len(log)] = new_row
     else:
-        log = pd.DataFrame({fields[i]:new_row[i] for i in range(len(fields))}, index=[0])
+        log = pd.DataFrame({fields[i]: new_row[i] for i in range(len(fields))}, index=[0])
 
-    log.to_csv(folder + "/metrics.csv", index=False)
+    log.to_csv(log_path, index=False)
     return epoch_loss, epoch_acc
 
 
@@ -62,26 +62,26 @@ if __name__ == '__main__':
         best_model = model
         best_loss = 100
         for epoch in range(num_epochs):
-            print('Epoch {}/{}'.format(epoch+1, num_epochs - 1))
+            print('Epoch {}/{}'.format(epoch, num_epochs -1))
             print('-' * 10)
 
             # Each epoch has a training and validation phase
-            for phase in ['train', 'val']:
+            for phase in ['val']:
                 if phase == 'train':
                     optimizer = lr_scheduler(optimizer, epoch)
                     model.train()  # Set model to training mode
                 else:
                     model.eval()
 
-                #at the start of  each epoch, reset metric counts
+                # at the start of  each epoch, reset metric counts
                 running_loss = 0.0
                 c_matrix = 0
 
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
-                    #those are needed, since I need the labels on cpu RAM, to compute the confusion matrix.
-                    cpu_labels= copy.deepcopy(labels)
+                    # those are needed, since I need the labels on cpu RAM, to compute the confusion matrix.
+                    cpu_labels = copy.deepcopy(labels)
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
                         optimizer.step()
                     running_loss += loss.item()
                     c_matrix += confusion_matrix(cpu_labels, preds.cpu())
-                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix)
+                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix, folder=folder)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
@@ -142,17 +142,15 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
-    #define destination folder
-    folder="../Results/"+time.strftime("%Y%m%d%H%M%S", time.localtime())
+    # define destination folder
+    folder = "../Results/" + time.strftime("%Y%m%d%H%M%S", time.localtime())
     if not os.path.exists(os.path.split(folder)[0]):
         os.mkdir(os.path.split(folder)[0])
     if not os.path.exists(folder):
         os.mkdir(folder)
 
-
-
     model_ft = get_model("resnet", pretrained=False)
-    #loss adaptation for imbalanced learning
+    # loss adaptation for imbalanced learning
     weights = [1, 2]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
@@ -166,10 +164,10 @@ if __name__ == '__main__':
         model_ft.cuda()
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=4)
+                           num_epochs=50)
 
     # Save model
-    torch.save(model_ft.state_dict(), folder +"/fine_tuned_best_model.pt")
+    torch.save(model_ft.state_dict(), folder + "/fine_tuned_best_model.pt")
 
-    #save the false positives
+    # save the false positives
     generate_falsepositive_list("bikelane", folder, model_ft)

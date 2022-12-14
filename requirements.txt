@@ -4,3 +4,5 @@ torchvision
 torch
 pandas
 scikit-learn
+zennit
+matplotlib
