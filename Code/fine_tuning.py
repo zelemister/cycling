@@ -5,7 +5,8 @@ import torch.optim as optim
 from torch.autograd import Variable
 import numpy as np
 import torchvision
-from torchvision import datasets, transforms
+from torchvision import datasets
+from transformations import get_transformer
 import time
 import copy
 import os
@@ -15,45 +16,34 @@ from fine_tuning_config_file import *
 from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix
+from overlooked_images import generate_falsepositive_list
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
 def compute_measures(epoch: int, phase: str, dset_sizes, running_loss, c_matrix):
-    if not os.path.exists("../Results/testresult.csv"):
-        if not os.path.exists("../Results"):
-            os.mkdir("../Results")
-        log = open("../Results/testresult.csv", "a")
-        lines = "epoch"+","+"phase"+","+"epoch_loss"+","+"tn"+","+"fp"+","+"fn"+","+"tp" + "\n"
-        log.writelines(lines)
-        log.close()
     tn, fp, fn, tp = c_matrix.ravel()
     epoch_loss = running_loss / dset_sizes[phase]
     epoch_acc = (tp + tn)/(tn+tp+fp+fn)
+    fields=["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
+    new_row=[epoch, phase, epoch_loss, tn, fp, fn, tp]
 
 
-    a = np.transpose(pd.DataFrame(np.array([epoch, phase, epoch_loss, tn, fp, fn, tp])))
-    a.columns = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
-    new_obs = f"{epoch},{phase},{epoch_loss},{tn},{fp},{fn},{tp},\n"
-    log = open("../Results/testresult.csv", "a")
-    log.writelines(new_obs)
-    log.close()
+
+    if os.path.exists(folder + "/metrics.csv"):
+        log = pd.read_csv(folder + "/metrics.csv")
+        log.loc[len(log)]=new_row
+    else:
+        log = pd.DataFrame({fields[i]:new_row[i] for i in range(len(fields))}, index=[0])
+
+    log.to_csv(folder + "/metrics.csv", index=False)
     return epoch_loss, epoch_acc
 
 
 if __name__ == '__main__':
 
-    # If you want to read more, transforms is a function from torchvision, and you can go read more here - http://pytorch.org/docs/master/torchvision/transforms.html
     data_transforms = {
-        'train': transforms.Compose([
-            transforms.CenterCrop(256),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        'val': transforms.Compose([
-            transforms.CenterCrop(256),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
+        'train': get_transformer("normalize_256"),
+        'val': get_transformer("normalize_256"),
     }
 
     data_dir = DATA_DIR
@@ -84,14 +74,18 @@ if __name__ == '__main__':
                 else:
                     model.eval()
 
+                #at the start of  each epoch, reset metric counts
                 running_loss = 0.0
-                running_corrects = 0
+                c_matrix = 0
 
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
+                    #those are needed, since I need the labels on cpu RAM, to compute the confusion matrix.
+                    cpu_labels= copy.deepcopy(labels)
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
+
                     # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
                     optimizer.zero_grad()
                     outputs = model(inputs)
@@ -103,12 +97,9 @@ if __name__ == '__main__':
                     if phase == 'train':
                         loss.backward()
                         optimizer.step()
-                    try:
-                        running_loss += loss.item()
-                        running_corrects += torch.sum(preds == labels.data)
-                    except:
-                        print('unexpected error, could not calculate loss or do a sum.')
-                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, running_corrects)
+                    running_loss += loss.item()
+                    c_matrix += confusion_matrix(cpu_labels, preds.cpu())
+                epoch_loss, epoch_acc = compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
@@ -145,10 +136,25 @@ if __name__ == '__main__':
         return optimizer
 
 
-    model_ft = get_model("resnet")
-    #criterion = nn.CrossEntropyLoss()
+    seed = 12345
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+
+    #define destination folder
+    folder="../Results/"+time.strftime("%Y%m%d%H%M%S", time.localtime())
+    if not os.path.exists(os.path.split(folder)[0]):
+        os.mkdir(os.path.split(folder)[0])
+    if not os.path.exists(folder):
+        os.mkdir(folder)
+
+
+
+    model_ft = get_model("resnet", pretrained=False)
     #loss adaptation for imbalanced learning
-    weights = [1, 17]  # as class distribution. 1879 negativs, 110 positives.
+    weights = [1, 2]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
     else:
@@ -160,11 +166,11 @@ if __name__ == '__main__':
         criterion.cuda()
         model_ft.cuda()
 
-    # Run the functions and save the best model in the function model_ft.
-    if os.path.exists("../Results/testresult.csv"):
-        os.remove("../Results/testresult.csv")
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                            num_epochs=100)
 
     # Save model
-    torch.save(model_ft.state_dict(), "../Models/fine_tuned_best_model.pt")
+    torch.save(model_ft.state_dict(), folder +"/fine_tuned_best_model.pt")
+
+    #save the false positives
+    generate_falsepositive_list("bikelane", folder)
