@@ -1,6 +1,6 @@
 # Learning rate parameters
-BASE_LR = 0.001
-EPOCH_DECAY = 5 # number of epochs after which the Learning rate is decayed exponentially.
+BASE_LR = 0.01
+EPOCH_DECAY = 15 # number of epochs after which the Learning rate is decayed exponentially.
 DECAY_WEIGHT = 0.1 # factor by which the learning rate is reduced.
 
 
