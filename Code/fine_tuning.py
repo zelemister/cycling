@@ -61,7 +61,6 @@ if __name__ == '__main__':
         best_loss_epoch = 1
         best_model = model
         best_loss = 100
-        #asdf
         for epoch in range(num_epochs):
             print('Epoch {}/{}'.format(epoch+1, num_epochs - 1))
             print('-' * 10)
