@@ -80,8 +80,6 @@ if __name__ == '__main__':
                 # Iterate over data.
                 for data in dset_loaders[phase]:
                     inputs, labels = data
-                    # those are needed, since I need the labels on cpu RAM, to compute the confusion matrix.
-                    cpu_labels = copy.deepcopy(labels)
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
 
@@ -97,7 +95,7 @@ if __name__ == '__main__':
                         loss.backward()
                         optimizer.step()
                     running_loss += loss.item()
-                    c_matrix += confusion_matrix(cpu_labels, preds.cpu())
+                    c_matrix += confusion_matrix(labels.cpu(), preds.cpu())
                 epoch_loss, epoch_acc = compute_measures(epoch=epoch,phase= phase,dset_sizes= dset_sizes,running_loss= running_loss,c_matrix= c_matrix, folder=folder)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
@@ -151,7 +149,7 @@ if __name__ == '__main__':
 
     model_ft = get_model("resnet", pretrained=False)
     # loss adaptation for imbalanced learning
-    weights = [1, 2]  # as class distribution. 1879 negativs, 110 positives.
+    weights = [1, 17]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
     else:
