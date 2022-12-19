@@ -15,19 +15,20 @@ from PIL import ImageFile
 from fine_tuning_config_file import *
 from model_loaders import get_model
 from numpy import random
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, roc_auc_score
 from overlooked_images import generate_falsepositive_list
 
 
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
-def compute_measures(epoch, phase, dset_sizes, running_loss, c_matrix, folder):
-    tn, fp, fn, tp = c_matrix.ravel()
+def compute_measures(epoch, phase, dset_sizes, running_loss, folder, preds_list, labels_list):
+    tn, fp, fn, tp = confusion_matrix(labels_list, preds_list).ravel()
+    auc = roc_auc_score(labels_list, preds_list)
     epoch_loss = running_loss / dset_sizes[phase]
     epoch_acc = (tp + tn) / (tn + tp + fp + fn)
-    fields = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp"]
-    new_row = [epoch, phase, epoch_loss, tn, fp, fn, tp]
+    fields = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp", "auc"]
+    new_row = [epoch, phase, epoch_loss, tn, fp, fn, tp, auc]
     log_path = os.path.join(folder, "metrics.csv")
     if os.path.exists(log_path):
         log = pd.read_csv(log_path)
@@ -62,7 +63,7 @@ if __name__ == '__main__':
         best_model = model
         best_loss = 100
         for epoch in range(num_epochs):
-            print('Epoch {}/{}'.format(epoch, num_epochs -1))
+            print('Epoch {}/{}'.format(epoch, num_epochs - 1))
             print('-' * 10)
 
             # Each epoch has a training and validation phase
@@ -75,7 +76,9 @@ if __name__ == '__main__':
 
                 # at the start of  each epoch, reset metric counts
                 running_loss = 0.0
-                c_matrix = 0
+                #c_matrix = 0
+                preds_list=[]
+                labels_list=[]
 
                 # Iterate over data.
                 for data in dset_loaders[phase]:
@@ -95,8 +98,15 @@ if __name__ == '__main__':
                         loss.backward()
                         optimizer.step()
                     running_loss += loss.item()
-                    c_matrix += confusion_matrix(labels.cpu(), preds.cpu())
-                epoch_loss, epoch_acc = compute_measures(epoch=epoch,phase= phase,dset_sizes= dset_sizes,running_loss= running_loss,c_matrix= c_matrix, folder=folder)
+
+
+                    #c_matrix += confusion_matrix(labels.cpu(), preds.cpu())
+
+                    preds_list=preds_list+preds.cpu()
+                    labels_list=labels_list+labels.cpu()
+                epoch_loss, epoch_acc = compute_measures(epoch=epoch, phase=phase, dset_sizes=dset_sizes,
+                                                         running_loss=running_loss, folder=folder,
+                                                         preds_list=preds_list, labels_list=labels_list)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                     phase, epoch_loss, epoch_acc))
 
@@ -149,7 +159,7 @@ if __name__ == '__main__':
 
     model_ft = get_model("resnet", pretrained=False)
     # loss adaptation for imbalanced learning
-    weights = [1, 17]  # as class distribution. 1879 negativs, 110 positives.
+    weights = [1, 1]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
         class_weights = torch.FloatTensor(weights).cuda()
     else:
@@ -162,7 +172,7 @@ if __name__ == '__main__':
         model_ft.cuda()
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=20)
+                           num_epochs=50)
 
     # Save model
     torch.save(model_ft.state_dict(), folder + "/fine_tuned_best_model.pt")

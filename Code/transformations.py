@@ -8,9 +8,10 @@ def get_transformer(name: str):
         transformer = transforms.Compose([transforms.ToTensor(),
                                           # generate a random number between 0 and 1, then multiply by 360 for a
                                           # random number between 0 and 360
-                                          transforms.RandomRotation(degrees=random.random(1)[0] * 360),
+                                          transforms.RandomRotation(degrees=random.random() * 360),
                                           transforms.RandomHorizontalFlip(),
-                                          transforms.RandomVerticalFlip()])
+                                          transforms.RandomVerticalFlip(),
+                                          transforms.ToPILImage()])
     elif name == "normalize_256":
         transformer = transforms.Compose([
             transforms.CenterCrop(256),

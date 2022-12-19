@@ -18,14 +18,14 @@ rotate = get_transformer("rotations")
 
 factor = 10
 for root, dirs, files in os.walk(image_folder):
-    if root.endswith("train/1"):
+    if root.endswith("train\\1"):
         for file in files:
             image = PIL.Image.open(os.path.join(root, file))
             oversampled_list = list(map(rotate, [image]*factor))
             for i in range(factor):
                 save_image(oversampled_list[i],  os.path.join(root, file[0:-4] + "_" + str(i) + ".png"))
             os.remove(os.path.join(root, file))
-    elif root.endswith("0") or root.endswith("val/1"):
+    elif root.endswith("0") or root.endswith("val\\1"):
         for file in files:
             image = PIL.Image.open(os.path.join(root, file))
             alt_image = rotate(image)
