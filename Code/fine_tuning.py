@@ -22,10 +22,10 @@ from DatasetGenerator import load_dataset
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
-def compute_measures(epoch, phase, dset_sizes, running_loss, folder, preds_list, labels_list):
+def compute_measures(epoch, phase, running_loss, folder, preds_list, labels_list):
     tn, fp, fn, tp = confusion_matrix(labels_list, preds_list).ravel()
     auc = roc_auc_score(labels_list, preds_list)
-    epoch_loss = running_loss / dset_sizes[phase]
+    epoch_loss = running_loss
     epoch_acc = (tp + tn) / (tn + tp + fp + fn)
     fields = ["epoch", "phase", "epoch_loss", "tn", "fp", "fn", "tp", "auc"]
     new_row = [epoch, phase, epoch_loss, tn, fp, fn, tp, auc]
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
                                                    shuffle=True, num_workers=12)
                     for x in ['train', 'val']}
-    dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
+    #dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
 
     def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
                     preds_list=preds_list + list(preds.cpu())
                     labels_list=labels_list + list(labels.cpu())
-                epoch_loss, epoch_acc = compute_measures(epoch=epoch, phase=phase, dset_sizes=dset_sizes,
+                epoch_loss, epoch_acc = compute_measures(epoch=epoch, phase=phase,
                                                          running_loss=running_loss, folder=folder,
                                                          preds_list=preds_list, labels_list=labels_list)
                 print('{} Loss: {:.4f} Acc: {:.4f}'.format(
@@ -171,7 +171,7 @@ if __name__ == '__main__':
         class_weights = torch.FloatTensor(weights).cuda()
     else:
         class_weights = torch.FloatTensor(weights)
-    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    criterion = nn.CrossEntropyLoss(weight=class_weights, reduction='mean')
 
     optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.001)
     if torch.cuda.is_available():
