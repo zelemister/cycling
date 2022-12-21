@@ -164,7 +164,7 @@ if __name__ == '__main__':
         folder = folder_changed
         os.mkdir(folder)
 
-    model_ft = get_model("resnet", pretrained=True)
+    model_ft = get_model("resnet", pretrained=False)
     # loss adaptation for imbalanced learning
     weights = [1, 1]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():

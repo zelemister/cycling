@@ -1,5 +1,5 @@
 # Expermentname
-EXPERMIMENT_NAME = "New_Oversampling_No_Weights_Pretrained"
+EXPERMIMENT_NAME = "New_Oversampling_No_Weights_No_Pretrained"
 
 
 # Learning rate parameters
