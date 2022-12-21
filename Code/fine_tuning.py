@@ -164,7 +164,7 @@ if __name__ == '__main__':
         folder = folder_changed
         os.mkdir(folder)
 
-    model_ft = get_model("resnet", pretrained=False)
+    model_ft = get_model("resnet", pretrained=True)
     # loss adaptation for imbalanced learning
     weights = [1, 1]  # as class distribution. 1879 negativs, 110 positives.
     if torch.cuda.is_available():
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         class_weights = torch.FloatTensor(weights)
     criterion = nn.CrossEntropyLoss(weight=class_weights)
 
-    optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.01)
+    optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.001)
     if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
