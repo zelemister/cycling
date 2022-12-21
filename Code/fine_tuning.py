@@ -173,7 +173,7 @@ if __name__ == '__main__':
         class_weights = torch.FloatTensor(weights)
     criterion = nn.CrossEntropyLoss(weight=class_weights, reduction='mean')
 
-    optimizer_ft = optim.RMSprop(model_ft.parameters(), lr=0.001)
+    optimizer_ft = optim.RMSprop(model_ft.fc.parameters(), lr=0.001)
     if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
