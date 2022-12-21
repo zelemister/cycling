@@ -17,7 +17,7 @@ from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from overlooked_images import generate_falsepositive_list
-
+from DatasetGenerator import load_dataset
 
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
@@ -42,20 +42,16 @@ def compute_measures(epoch, phase, dset_sizes, running_loss, folder, preds_list,
 
 if __name__ == '__main__':
 
-    data_transforms = {
-        'train': get_transformer("normalize_256"),
-        'val': get_transformer("normalize_256"),
-    }
+    data_transforms = get_transformer("normalize_256")
 
-    data_dir = DATA_DIR
-    dsets = {x: datasets.ImageFolder(os.path.join(data_dir, x), data_transforms[x])
-             for x in ['train', 'val']}
+    payload = {"task": "bikelane", "phase": "train", "transform": data_transforms, "oversamplingrate": 10, "split": 0.2}
+
+    dsets = {'train': load_dataset(**payload, set="train"),
+             'val':   load_dataset(**payload, set="val")}
     dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
                                                    shuffle=True, num_workers=12)
                     for x in ['train', 'val']}
     dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
-    dset_classes = dsets['train'].classes
-
 
     def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
@@ -82,7 +78,8 @@ if __name__ == '__main__':
 
                 # Iterate over data.
                 for data in dset_loaders[phase]:
-                    inputs, labels = data
+                    inputs = data["Image"]
+                    labels = data["Label"]
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
 
@@ -102,8 +99,8 @@ if __name__ == '__main__':
 
                     #c_matrix += confusion_matrix(labels.cpu(), preds.cpu())
 
-                    preds_list=preds_list+preds.cpu()
-                    labels_list=labels_list+labels.cpu()
+                    preds_list=preds_list + list(preds.cpu())
+                    labels_list=labels_list + list(labels.cpu())
                 epoch_loss, epoch_acc = compute_measures(epoch=epoch, phase=phase, dset_sizes=dset_sizes,
                                                          running_loss=running_loss, folder=folder,
                                                          preds_list=preds_list, labels_list=labels_list)
@@ -150,11 +147,21 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
+    experiment_name = EXPERMIMENT_NAME
     # define destination folder
-    folder = "../Results/" + time.strftime("%Y%m%d%H%M%S", time.localtime())
+    folder = "../Results/" + experiment_name
+
     if not os.path.exists(os.path.split(folder)[0]):
         os.mkdir(os.path.split(folder)[0])
     if not os.path.exists(folder):
+        os.mkdir(folder)
+    else:
+        folder_changed=folder
+        i = 2
+        while os.path.exists(folder_changed):
+            folder_changed = folder + "_" + str(i)
+            i+=1
+        folder = folder_changed
         os.mkdir(folder)
 
     model_ft = get_model("resnet", pretrained=False)

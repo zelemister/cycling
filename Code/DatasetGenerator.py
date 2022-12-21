@@ -77,10 +77,9 @@ class load_dataset(Dataset):
             if random.random() < 1 - (1 / self.rate):
                 image = get_transformer("rotations")(image)
 
-            if self.transform:
-                image = self.transform(image)
+        if self.transform:
+            image = self.transform(image)
         return ({"Image": image, "Label": label})
-        # oversample and transform all the images in the train set in __get_item__
 
     def __len__(self):
         return (self.dataset.__len__())
