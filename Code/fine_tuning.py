@@ -16,7 +16,7 @@ from fine_tuning_config_file import *
 from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix, roc_auc_score
-from overlooked_images import generate_falsepositive_list
+from overlooked_images import generate_false_negative_list
 from DatasetGenerator import load_dataset
 
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
@@ -185,4 +185,5 @@ if __name__ == '__main__':
     torch.save(model_ft.state_dict(), folder + "/fine_tuned_best_model.pt")
 
     # save the false positives
-    generate_falsepositive_list("bikelane", folder, model_ft)
+    print("Generating List of False Positives in ")
+    generate_false_negative_list("bikelane", folder, model_ft)
