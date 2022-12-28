@@ -40,29 +40,19 @@ class load_dataset(Dataset):
             label = -1
             if image[:-4] in labels.Name.values:
                 label = int(labels.loc[labels["Name"] == image[:-4], "Label"].values)
-            # RIMs are also bikelanes
-            elif image[:-4] in labels_rim["NR_STR,C,254"]:
+            elif image[2:-4] in str(labels_rim["NR_STR,C,254"]):
                 label = 2
             # elif image in labels_d["Name"].values:
             # if not isnan(labels_d.loc[labels_d["Name"]==image, "Label"]):
             #    if int(labels_d.loc[labels_d["Name"]==image, "Label"]) in [0,1]:
 
             #    label = int(labels_d.loc[labels_d["Name"]==image, "Label"])
-            #    if label == 2: label = 2 #rims are also bikelanes
             elif image in labels_s["Name"].values:
                 if not isnan(labels_s.loc[labels_s["Name"] == image, "Label"]):
                     label = int(labels_s.loc[labels_s["Name"] == image, "Label"])
-                    if label == 2: label = 2  # rims are also bikelanes
-            # sort randomly into val set and train set
             if label in [0, 1, 2]:
-                if random.random() < self.split:
-                    if self.set == "val":
-                        name_list.append(image)
-                        label_list.append(label)
-                else:
-                    if self.set == "train":
-                        name_list.append(image)
-                        label_list.append(label)
+                name_list.append(image)
+                label_list.append(label)
 
         if self.task == "bikelane":
             # this should set all "2" to "1", such that rims count as bikelanes
@@ -81,6 +71,13 @@ class load_dataset(Dataset):
             correct_labels = [rim_labels[i]-1 for i in range(len(rim_labels))]
             rim_names = [name_list[i] for i in indizes]
             self.dataset = pd.DataFrame({"Name": rim_names, "Label": correct_labels})
+
+        if set == "train":
+            self.dataset = self.dataset.sample(frac=max(split, 1-split), random_state=42)
+        elif set == "val":
+            sample = self.dataset.sample(frac=max(split, 1-split), random_state=42)
+            self.dataset = self.dataset[~self.dataset.index.isin(sample.index)]
+
     def __getitem__(self, item):
         if torch.is_tensor(item):
             item = item.tolist()
@@ -99,16 +96,20 @@ class load_dataset(Dataset):
     def __len__(self):
         return self.dataset.__len__()
 
-
+"""
 # this is testcode to show that batches generate new images for each time a dataloader loads a new batch
 random.seed(123456)
-data = load_dataset(task="rim", phase="train", set="train", transform=transforms.ToTensor(),
+data = load_dataset(task="bikelane", phase="test", set="train", transform=transforms.ToTensor(),
+                    oversamplingrate=2, split=0)
+data2 = load_dataset(task="rim", phase="test", set="train", transform=transforms.ToTensor(),
                     oversamplingrate=2, split=0)
 dset_loader = DataLoader(data, batch_size=1, shuffle=False)
 
 for i in range(5):
     dset_loader = DataLoader(data, batch_size=1, shuffle=False)
     for batch in dset_loader:
-        img=transforms.ToPILImage()(batch["Image"].squeeze(0))
-        img.show()
-        break
+        if batch["Label"] == 1:
+            img=transforms.ToPILImage()(batch["Image"].squeeze(0))
+            img.show()
+        #break
+"""
