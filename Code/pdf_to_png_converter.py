@@ -8,14 +8,16 @@ import os
 #code was used and modified from the internet:
 #https://pythonscholar.com/blog/extract-images-from-pdf-in-python/
 
-folder = "../Images"
+folder = "../Images_512"
 if not os.path.isdir(folder):
     os.mkdir(folder)
 os.chdir(folder)
-total_num = os.listdir("../PDFs").__len__()
 
-for index, name in enumerate(os.listdir("../PDFs"), start=1):
-    pdf_file = fitz.open(f"../PDFs/{name}")
+pdfs_folder = "../512_pdfs"
+total_num = os.listdir(pdfs_folder).__len__()
+
+for index, name in enumerate(os.listdir(pdfs_folder), start=1):
+    pdf_file = fitz.open(f"pdfs_folder/{name}")
     name_raw = name[0:-4]
     page = pdf_file[0]
 

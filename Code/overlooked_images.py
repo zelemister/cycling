@@ -1,4 +1,4 @@
-from fine_tuning_config_file import *
+from config_file import *
 from model_loaders import get_model
 from torchvision import datasets, transforms
 from transformations import get_transformer
@@ -54,7 +54,7 @@ def generate_false_negative_list(data:Dataset, destination:str, model):
     print()
     list.to_csv(destination + "/overlooked_images.csv")
 """
-data_transforms = get_transformer("normalize_256")
+data_transforms = get_transformer("normalize")
 payload = {"task": "bikelane", "phase": "train", "transform": data_transforms, "oversamplingrate": 10, "split": 0.2}
 destination = "../Results/New_Oversampling_No_Weights_No_Pretrained_2"
 model = get_model("resnet", pretrained=False)

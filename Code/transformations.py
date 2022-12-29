@@ -3,7 +3,7 @@ import torch
 import random
 
 
-def get_transformer(name: str):
+def get_transformer(name: str, resolution = 256):
     if name == "rotations":
         transformer = transforms.Compose([transforms.ToTensor(),
                                           # generate a random number between 0 and 1, then multiply by 360 for a
@@ -12,15 +12,9 @@ def get_transformer(name: str):
                                           transforms.RandomHorizontalFlip(),
                                           transforms.RandomVerticalFlip(),
                                           transforms.ToPILImage()])
-    elif name == "normalize_256":
+    elif name == "normalize":
         transformer = transforms.Compose([
-            transforms.CenterCrop(256),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ])
-    elif name == "normalize_512":
-        transformer = transforms.Compose([
-            transforms.CenterCrop(512),
+            transforms.CenterCrop(resolution),
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])

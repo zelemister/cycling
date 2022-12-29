@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 
 
 class load_dataset(Dataset):
-    def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float):
+    def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float, resolution=256):
         """
         :param task: string; either "bikelane" or "rim"
         :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split of the images, maybe
@@ -23,11 +23,12 @@ class load_dataset(Dataset):
         self.split = split
         self.rate = oversamplingrate
         self.transform = transform
+        self.resolution = resolution
         self.task = task
         if os.path.exists("../" + phase):
             self.image_folder = "../" + phase
         else:
-            self.image_folder = "../Images"
+            self.image_folder = "../Images_" + str(resolution)
 
         labels = pd.read_csv("../labeling_clean.csv")
         labels_s = pd.read_csv("../labeling_steffen.csv")
@@ -77,6 +78,7 @@ class load_dataset(Dataset):
         elif set == "val":
             sample = self.dataset.sample(frac=max(split, 1-split), random_state=42)
             self.dataset = self.dataset[~self.dataset.index.isin(sample.index)]
+        self.dataset = self.dataset.reset_index(drop=True)
 
     def __getitem__(self, item):
         if torch.is_tensor(item):
@@ -87,21 +89,21 @@ class load_dataset(Dataset):
 
         if self.set == "train":
             if random.random() < 1 - (1 / self.rate):
-                image = get_transformer("rotations")(image)
+                if self.transform:
+                    image = self.transform(image)
 
-        if self.transform:
-            image = self.transform(image)
+        image = get_transformer("normalize", resolution=self.resolution)(image)
+
         return {"Image": image, "Label": label}
 
     def __len__(self):
         return self.dataset.__len__()
-
 """
 # this is testcode to show that batches generate new images for each time a dataloader loads a new batch
 random.seed(123456)
-data = load_dataset(task="bikelane", phase="test", set="train", transform=transforms.ToTensor(),
+data = load_dataset(task="bikelane", phase="train", set="train", transform=get_transformer("rotations"),
                     oversamplingrate=2, split=0)
-data2 = load_dataset(task="rim", phase="test", set="train", transform=transforms.ToTensor(),
+data2 = load_dataset(task="rim", phase="train", set="train", transform=get_transformer("rotations"),
                     oversamplingrate=2, split=0)
 dset_loader = DataLoader(data, batch_size=1, shuffle=False)
 

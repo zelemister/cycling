@@ -2,23 +2,21 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.autograd import Variable
 import numpy as np
 import torchvision
 from torchvision import datasets
-from transformations import get_transformer
 import time
 import copy
 import os
 import pandas as pd
 from PIL import ImageFile
-from fine_tuning_config_file import *
+from config_file import *
 from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from overlooked_images import generate_false_negative_list
 from DatasetGenerator import load_dataset
-
+import shutil
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
@@ -42,20 +40,19 @@ def compute_measures(epoch, phase, running_loss, folder, preds_list, labels_list
 
 if __name__ == '__main__':
 
-    data_transforms = get_transformer("normalize_256")
-
-    payload = {"task": "bikelane", "phase": "train", "transform": data_transforms, "oversamplingrate": 10, "split": 0.2}
-
+    # data_transforms = get_transformer("rotations") payload = {"task": "bikelane", "phase": "train", "transform":
+    # data_transforms, "oversamplingrate": 10, "split": 0.2}
+    payload = {"task": TASK, "phase": "train", "transform": TRANSFORMATION, "oversamplingrate": OVERSAMPLING_RATE,
+               "split": VAL_SET_RATIO, "resolution":RESOLUTION}
     dsets = {'train': load_dataset(**payload, set="train"),
              'val':   load_dataset(**payload, set="val")}
     dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
                                                    shuffle=True, num_workers=12)
                     for x in ['train', 'val']}
-    #dset_sizes = {x: len(dsets[x]) for x in ['train', 'val']}
 
     def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
-        best_loss_epoch = 1
+        best_loss_epoch = 100
         best_model = model
         best_loss = 100
         for epoch in range(num_epochs):
@@ -163,27 +160,32 @@ if __name__ == '__main__':
             i+=1
         folder = folder_changed
         os.mkdir(folder)
-
-    model_ft = get_model("resnet", pretrained=False)
+    shutil.copyfile("config_file.py", folder + "/config_file.py")
+    model_ft = get_model(MODEL, pretrained=PRETRAINED)
     # loss adaptation for imbalanced learning
-    weights = [1, 1]  # as class distribution. 1879 negativs, 110 positives.
+    weights = torch.FloatTensor(WEIGHTS)
     if torch.cuda.is_available():
-        class_weights = torch.FloatTensor(weights).cuda()
-    else:
-        class_weights = torch.FloatTensor(weights)
-    criterion = nn.CrossEntropyLoss(weight=class_weights, reduction='mean')
+        weights= weights.cuda()
+    criterion = nn.CrossEntropyLoss(weight=weights, reduction='mean')
 
-    optimizer_ft = optim.RMSprop(model_ft.fc.parameters(), lr=0.001)
+    if PARAMS =="full":
+        optimizer_ft = OPTIMIZER(model_ft.parameters(), lr=BASE_LR)
+    else:
+        if MODEL=="resnet":
+            optimizer_ft = OPTIMIZER(model_ft.fc.parameters(), lr=BASE_LR)
+        elif MODEL=="transformer":
+            optimizer_ft = OPTIMIZER(model_ft.heads.parameters(), lr=BASE_LR)
+
     if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=50)
+                           num_epochs=NUM_EPOCHS)
 
     # Save model
     torch.save(model_ft.state_dict(), folder + "/fine_tuned_best_model.pt")
 
     # save the false positives
     print("Generating List of False Positives in ")
-    generate_false_negative_list("bikelane", folder, model_ft)
+    generate_false_negative_list(data=dsets["val"], destination=folder, model=model_ft)
