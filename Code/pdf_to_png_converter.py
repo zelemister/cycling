@@ -17,7 +17,7 @@ pdfs_folder = "../512_pdfs"
 total_num = os.listdir(pdfs_folder).__len__()
 
 for index, name in enumerate(os.listdir(pdfs_folder), start=1):
-    pdf_file = fitz.open(f"pdfs_folder/{name}")
+    pdf_file = fitz.open(os.path.join(pdfs_folder,name))
     #name_raw = name[2:-4] # For the small pictures. This line
     name_raw = "x_" + name[3:-4]
     page = pdf_file[0]
