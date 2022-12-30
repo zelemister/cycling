@@ -25,10 +25,8 @@ class load_dataset(Dataset):
         self.transform = transform
         self.resolution = resolution
         self.task = task
-        if os.path.exists("../" + phase):
-            self.image_folder = "../" + phase
-        else:
-            self.image_folder = "../Images_" + str(resolution)
+        if os.path.exists("../Images" + "_" + str(resolution) + phase):
+            self.image_folder = "../Images" + "_" + str(resolution) + phase
 
         labels = pd.read_csv("../labeling_clean.csv")
         labels_s = pd.read_csv("../labeling_steffen.csv")
