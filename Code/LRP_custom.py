@@ -61,7 +61,18 @@ transform = Compose([
 
 # load the image
 # image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
-image = Image.open('../Images/x_18030025.png')
+# #image = Image.open('../Example Images/x_18040012.png')
+# image = Image.open('../Images/x_18030025.png')
+image = Image.open('../Images/x_23040044.png')
+# image = Image.open('../Images/x_77030014.png')
+"""
+0,x_18020087_1.png
+1,x_23040044_1.png
+2,x_10040055_1.png
+3,x_77030014_1.png
+4,x_15030078_1.png
+5,x_23030052_1.png
+"""
 
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]

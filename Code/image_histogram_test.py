@@ -41,10 +41,10 @@ def is_pretty_gray(color_bgr):
 # print(img.size)
 
 # need image type converted to matrix. channel 0=blue, 1=green, 2=red
-img_cv = cv2.imread("../Example Images/x_18040012.png")
+#img_cv = cv2.imread("../Example Images/x_18040012.png")
 # img_cv = cv2.imread("../Example Images/x_10020034.png")
 #img_cv = cv2.imread("../Example Images/x_1010001.png")
-
+img_cv = cv2.imread('../Images/x_23040044.png')
 
 def classify_colors(img_cv):
     rows, cols, _ = img_cv.shape
