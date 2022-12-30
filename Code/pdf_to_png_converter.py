@@ -8,12 +8,17 @@ import os
 #code was used and modified from the internet:
 #https://pythonscholar.com/blog/extract-images-from-pdf-in-python/
 
-folder = "../Images_512"
+#folder = "../Images_512"
+#pdfs_folder = "../512_pdfs"
+
+folder = "../Images_256"
+pdfs_folder = "../PDFs"
+
 if not os.path.isdir(folder):
     os.mkdir(folder)
 os.chdir(folder)
 
-pdfs_folder = "../512_pdfs"
+
 total_num = os.listdir(pdfs_folder).__len__()
 
 for index, name in enumerate(os.listdir(pdfs_folder), start=1):
