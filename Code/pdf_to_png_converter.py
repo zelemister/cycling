@@ -19,7 +19,7 @@ total_num = os.listdir(pdfs_folder).__len__()
 for index, name in enumerate(os.listdir(pdfs_folder), start=1):
     pdf_file = fitz.open(f"pdfs_folder/{name}")
     #name_raw = name[2:-4] # For the small pictures. This line
-    name_raw = name[3:-4]
+    name_raw = "x_" + name[3:-4]
     page = pdf_file[0]
 
     # get the XREF of the image
@@ -32,5 +32,5 @@ for index, name in enumerate(os.listdir(pdfs_folder), start=1):
     # load it to PIL
     image = Image.open(io.BytesIO(image_bytes))
     # save it to local disk
-    image.save(f"x_{name_raw}.{image_ext}")
-    print(f"Added file {index}/{total_num}; {name_raw}.{image_ext}")
+    image.save(folder + f"{name_raw}.{image_ext}")
+    #print(f"Added file {index}/{total_num}; {name_raw}.{image_ext}")
