@@ -1,6 +1,6 @@
 set.seed(9271755)
 
-folder = "Images_512/"
+folder = "Images_256/"
 if(!dir.exists(paste0(folder, "train"))){
   dir.create(paste0(folder, "train"))
 }
