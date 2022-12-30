@@ -16,7 +16,7 @@ if not os.path.exists(folder_path):
     os.mkdir(folder_path)
 
 # image transformation can be normalize_size or rotations
-transformation_name = "normalize_256"
+transformation_name = "normalize"
 image_transformation = get_transformer(transformation_name)
 
 # image lists
