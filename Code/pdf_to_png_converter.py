@@ -12,7 +12,7 @@ folder = "../Images_512"
 if not os.path.isdir(folder):
     os.mkdir(folder)
 os.chdir(folder)
-
+"""
 pdfs_folder = "../512_pdfs"
 total_num = os.listdir(pdfs_folder).__len__()
 
@@ -34,3 +34,4 @@ for index, name in enumerate(os.listdir(pdfs_folder), start=1):
     # save it to local disk
     image.save(folder + f"{name_raw}.{image_ext}")
     #print(f"Added file {index}/{total_num}; {name_raw}.{image_ext}")
+"""
