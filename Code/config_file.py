@@ -1,13 +1,17 @@
 from transformations import get_transformer
 import torch.optim as optim
 # Expermentname
-EXPERMIMENT_NAME = "RIM_Test"
+EXPERMIMENT_NAME = "RIM_512_Test"
 NUM_EPOCHS = 100
 OVERSAMPLING_RATE = 10
 
 #image resolution
-RESOLUTION = 256
-BATCH_SIZE = 64 # 64 for 256 works, for 512 16.
+RESOLUTION = 512
+
+if RESOLUTION==256:
+    BATCH_SIZE=64
+elif RESOLUTION==512:
+    BATCH_SIZE = 16
 # oversampling transformation
 TRANSFORMATION = get_transformer("rotations", resolution=RESOLUTION)
 #"bikelane" or "rim
