@@ -2,7 +2,7 @@ from transformations import get_transformer
 import torch.optim as optim
 # Expermentname
 EXPERMIMENT_NAME = "Transformer_Test"
-NUM_EPOCHS = 80
+NUM_EPOCHS = 100
 OVERSAMPLING_RATE = 10
 
 #image resolution
@@ -11,10 +11,10 @@ BATCH_SIZE = 64 # 64 for 256 works, for 512 16.
 # oversampling transformation
 TRANSFORMATION = get_transformer("rotations", resolution=RESOLUTION)
 #"bikelane" or "rim
-TASK = "bikelane"
+TASK = "rim"
 
 #transformer or resnet (resnet version maybe?
-MODEL = "transformer"
+MODEL = "resnet"
 PRETRAINED = True
 #"full" or "head"
 PARAMS = "full"
