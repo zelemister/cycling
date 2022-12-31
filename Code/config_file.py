@@ -1,7 +1,7 @@
 from transformations import get_transformer
 import torch.optim as optim
 # Expermentname
-EXPERMIMENT_NAME = "Test_Config_Overhall"
+EXPERMIMENT_NAME = "Test_Config_512"
 NUM_EPOCHS = 80
 OVERSAMPLING_RATE = 10
 
