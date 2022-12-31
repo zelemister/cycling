@@ -7,7 +7,7 @@ OVERSAMPLING_RATE = 10
 
 #image resolution
 RESOLUTION = 512
-BATCH_SIZE = 32 # 64 for 256 works, for 512 probably lower.
+BATCH_SIZE = 16 # 64 for 256 works, for 512 probably lower.
 # oversampling transformation
 TRANSFORMATION = get_transformer("rotations", resolution=RESOLUTION)
 #"bikelane" or "rim
