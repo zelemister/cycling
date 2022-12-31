@@ -1,7 +1,7 @@
 from transformations import get_transformer
 import torch.optim as optim
 # Expermentname
-EXPERMIMENT_NAME = "Test_Config_512"
+EXPERMIMENT_NAME = "Test_Config_512_head_only"
 NUM_EPOCHS = 80
 OVERSAMPLING_RATE = 10
 
@@ -17,7 +17,7 @@ TASK = "bikelane"
 MODEL = "resnet"
 PRETRAINED = True
 #"full" or "head"
-PARAMS = "full"
+PARAMS = "head"
 
 #validation set ratio
 VAL_SET_RATIO = 0.2
