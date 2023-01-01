@@ -65,7 +65,7 @@ testimage = Image.open('../Example Images/dornbusch-lighthouse.jpg')
 # image = Image.open('../Images/x_18030025.png')
 image = Image.open('../Images/x_23040044.png')
 # image = Image.open('../Images/x_77030014.png')
-"""
+""""
 0,x_18020087_1.png
 1,x_23040044_1.png
 2,x_10040055_1.png
@@ -73,7 +73,7 @@ image = Image.open('../Images/x_23040044.png')
 4,x_15030078_1.png
 5,x_23030052_1.png
 """
-"""
+
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]
 # print(data.shape)
@@ -119,15 +119,16 @@ img = imgify(relevance, symmetric=True, cmap='coldnhot')
 # show the image
 # display(transform_img(img)) #diplay seems to be a jupyter notebook function
 img.show()
-"""
+
 
 
 def explainme(pil_image: Image, resolution=256, model_name="resnet",
               pretrained_val=False, finetune_path="../Models" + "/fine_tuned_best_model.pt"):
     # define the base image transform
     transform_img = Compose([
-            Resize(256),
-            CenterCrop(224),
+            #Resize(256),
+            #CenterCrop(224),
+            CenterCrop(256)
         ])
     # define the normalization transform
     transform_norm = Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
