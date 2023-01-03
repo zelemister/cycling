@@ -6,12 +6,12 @@ NUM_EPOCHS = 100
 OVERSAMPLING_RATE = 10
 
 #image resolution
-RESOLUTION = 512
+RESOLUTION = 256
 
 # oversampling transformation
 TRANSFORMATION = get_transformer("rotations", resolution=RESOLUTION)
 #"bikelane" or "rim
-TASK = "rim"
+TASK = "bikelane"
 
 #transformer or resnet (resnet version maybe?
 MODEL = "resnet"
