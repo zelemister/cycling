@@ -1,18 +1,18 @@
-#Resources
-#https://github.com/sebastian-lapuschkin/lrp_toolbox
-#https://github.com/chr5tphr/zennit
-#Tutorial: https://zennit.readthedocs.io/en/latest/tutorial/image-classification-vgg-resnet.html
+# Resources
+# https://github.com/sebastian-lapuschkin/lrp_toolbox
+# https://github.com/chr5tphr/zennit
+# Tutorial: https://zennit.readthedocs.io/en/latest/tutorial/image-classification-vgg-resnet.html
 
-#Aim: create heatmap of model predicitions and analyze false positives
+# Aim: create heatmap of model predicitions and analyze false positives
 
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-#import cv2
+# import cv2
 from PIL._imaging import display
 from torch.nn import Linear
 from PIL import Image
-#import torchvision.transforms as T
+# import torchvision.transforms as T
 from torchvision.transforms import Compose, Resize, CenterCrop
 from torchvision.transforms import ToTensor, Normalize, ToPILImage
 from torchvision.models import resnet18
@@ -54,18 +54,18 @@ transform_img = Compose([
 transform_norm = Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
 # define the full tensor transform
 transform = Compose([
-    transform_img, #resize and crop
+    transform_img,  # resize and crop
     ToTensor(),
-    transform_norm, #normalize
+    transform_norm,  # normalize
 ])
 
 # load the image
-# image = Image.open('../Example Images/dornbusch-lighthouse.jpg')
-# #image = Image.open('../Example Images/x_18040012.png')
+testimage = Image.open('../Example Images/dornbusch-lighthouse.jpg')
+# # image = Image.open('../Example Images/x_18040012.png')
 # image = Image.open('../Images/x_18030025.png')
 image = Image.open('../Images/x_23040044.png')
 # image = Image.open('../Images/x_77030014.png')
-"""
+""""
 0,x_18020087_1.png
 1,x_23040044_1.png
 2,x_10040055_1.png
@@ -76,11 +76,11 @@ image = Image.open('../Images/x_23040044.png')
 
 # transform the PIL image and insert a batch-dimension
 data = transform(image)[None]
-#print(data.shape)
-#print(data_PIL)
+# print(data.shape)
+# print(data_PIL)
 # display the resized and cropped image
-#data_PIL = ToPILImage()(data) #only works with unbatched data = transform(image)
-#data_PIL.show()
+# data_PIL = ToPILImage()(data) #only works with unbatched data = transform(image)
+# data_PIL.show()
 
 # load the model and set it to evaluation mode
 # model = resnet18(weights=None).eval()
@@ -110,7 +110,6 @@ with Gradient(model=model, composite=composite) as attributor:
 
 print(f'Prediction: {output.argmax(1)[0].item()}')
 
-
 # sum over the channels
 relevance = attribution.sum(1)
 
@@ -118,5 +117,56 @@ relevance = attribution.sum(1)
 img = imgify(relevance, symmetric=True, cmap='coldnhot')
 
 # show the image
-#display(transform_img(img)) #diplay seems to be a jupyter notebook function
+# display(transform_img(img)) #diplay seems to be a jupyter notebook function
 img.show()
+
+
+
+def explainme(pil_image: Image, resolution=256, model_name="resnet",
+              pretrained_val=False, finetune_path="../Models" + "/fine_tuned_best_model.pt"):
+    # define the base image transform
+    transform_img = Compose([
+            #Resize(256),
+            #CenterCrop(224),
+            CenterCrop(256)
+        ])
+    # define the normalization transform
+    transform_norm = Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225))
+    # define the full tensor transform
+    transform = Compose([
+            transform_img,  # resize and crop
+            ToTensor(),
+            transform_norm,  # normalize
+        ])
+    if not isinstance(pil_image, Image.Image):
+            raise ValueError('Input not an Image')
+    else:
+        # transform the PIL image and insert a batch-dimension
+        data = transform(pil_image)[None]
+        # load the model and set it to evaluation mode
+        # model = resnet18(weights=None).eval()
+        # model = resnet18().eval()
+        model = get_model("resnet", pretrained=False)
+        model.load_state_dict(torch.load("../Models" + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
+        model = model.eval()
+        # use the ResNet-specific canonizer
+        canonizer = ResNetCanonizer()
+        # the ZBox rule needs the lowest and highest values, which are here for
+        # ImageNet 0. and 1. with a different normalization for each channel
+        low, high = transform_norm(torch.tensor([[[[[0.]]] * 3], [[[[1.]]] * 3]]))
+        # create a composite, specifying the canonizers, if any
+        composite = EpsilonGammaBox(low=low, high=high, canonizers=[canonizer])
+        # choose a target class for the attribution (label 437 is lighthouse)
+        target = torch.eye(2)[[1]]
+        # create the attributor, specifying model and composite
+        with Gradient(model=model, composite=composite) as attributor:
+            # compute the model output and attribution
+            output, attribution = attributor(data, target)
+        # sum over the channels
+        relevance = attribution.sum(1)
+        # create an image of the visualize attribution
+        img = imgify(relevance, symmetric=True, cmap='coldnhot')
+        # return the image
+        return img
+
+#explainme(testimage).show()
