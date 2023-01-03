@@ -17,6 +17,7 @@ from sklearn.metrics import confusion_matrix, roc_auc_score
 from overlooked_images import generate_false_negative_list
 from DatasetGenerator import load_dataset
 import shutil
+import argparse
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
@@ -39,17 +40,6 @@ def compute_measures(epoch, phase, running_loss, folder, preds_list, labels_list
 
 
 if __name__ == '__main__':
-
-    # data_transforms = get_transformer("rotations") payload = {"task": "bikelane", "phase": "train", "transform":
-    # data_transforms, "oversamplingrate": 10, "split": 0.2}
-    payload = {"task": TASK, "phase": "train", "transform": TRANSFORMATION, "oversamplingrate": OVERSAMPLING_RATE,
-               "split": VAL_SET_RATIO, "resolution":RESOLUTION}
-    dsets = {'train': load_dataset(**payload, set="train"),
-             'val':   load_dataset(**payload, set="val")}
-    dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=BATCH_SIZE,
-                                                   shuffle=True, num_workers=12)
-                    for x in ['train', 'val']}
-
     def train_model(model, criterion, optimizer, lr_scheduler, num_epochs=50):
         since = time.time()
         best_loss_epoch = 100
@@ -123,10 +113,48 @@ if __name__ == '__main__':
         return best_model
 
 
+
+    ##### This is parser stuff
+    parser=argparse.ArgumentParser()
+    parser.add_argument('--name', type=str, default=EXPERMIMENT_NAME)
+    parser.add_argument('--epochs', type=int, default=NUM_EPOCHS)
+    parser.add_argument('--oversampling_rate', type=int, default=OVERSAMPLING_RATE)
+    parser.add_argument('--resolution', type=int, default=RESOLUTION)
+    #parser.add_argument('--transformation', type=function, default=TRANSFORMATION)
+    parser.add_argument('--task', type=str, default=TASK)
+    parser.add_argument('--model', type=str, default=MODEL)
+    parser.add_argument('--pretrained', type=bool, default=PRETRAINED)
+    parser.add_argument('--params', type=str, default=PARAMS)
+    parser.add_argument('--val_ratio', type=float, default=VAL_SET_RATIO)
+    #parser.add_argument('--weights', type=float, default=BASE_LR)
+    #parser.add_argument('--optimizer', type=float, default=BASE_LR)
+    parser.add_argument('--lr', type=float, default=BASE_LR)
+    parser.add_argument('--epoch_decay', type=int, default=EPOCH_DECAY)
+    parser.add_argument('--decay_weight', type=float, default=DECAY_WEIGHT)
+
+
+    args = parser.parse_args()
+    experiment_name = args.name
+    num_epochs = args.epochs
+    oversampling_rate = args.oversampling_rate
+    resolution = args.resolution
+    #transformation = args.transformation
+    task = args.task
+    model_name = args.model
+    pretrained = args.pretrained
+    params = args.params
+    val_ratio = args.val_ratio
+    #weights = args.weights
+    #optimizer = args.optimizer
+    lr = args.lr
+    epoch_decay = args.epoch_decay
+    decay_weight = args.decay_weight
+    ##### This is parser stuff
+
     # This function changes the learning rate over the training model.
-    def exp_lr_scheduler(optimizer, epoch, init_lr=BASE_LR, lr_decay_epoch=EPOCH_DECAY):
-        """Decay learning rate by a factor of DECAY_WEIGHT every lr_decay_epoch epochs."""
-        lr = init_lr * (DECAY_WEIGHT ** (epoch // lr_decay_epoch))
+    def exp_lr_scheduler(optimizer, epoch, init_lr=lr, lr_decay_epoch=epoch_decay):
+        #Decay learning rate by a factor of DECAY_WEIGHT every lr_decay_epoch epochs.
+        lr = init_lr * (decay_weight ** (epoch // lr_decay_epoch))
 
         if epoch % lr_decay_epoch == 0:
             print('LR is set to {}'.format(lr))
@@ -136,6 +164,10 @@ if __name__ == '__main__':
 
         return optimizer
 
+    if resolution == 256:
+        batch_size = 64
+    elif resolution == 512:
+        batch_size = 16
 
     seed = 12345
     torch.manual_seed(seed)
@@ -144,7 +176,7 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
-    experiment_name = EXPERMIMENT_NAME
+
     # define destination folder
     folder = "../Results/" + experiment_name
 
@@ -161,31 +193,40 @@ if __name__ == '__main__':
         folder = folder_changed
         os.mkdir(folder)
     shutil.copyfile("config_file.py", folder + "/config_file.py")
-    model_ft = get_model(MODEL, pretrained=PRETRAINED)
+    model_ft = get_model(model_name, pretrained=pretrained)
     # loss adaptation for imbalanced learning
     weights = torch.FloatTensor(WEIGHTS)
     if torch.cuda.is_available():
         weights= weights.cuda()
     criterion = nn.CrossEntropyLoss(weight=weights, reduction='mean')
 
-    if PARAMS =="full":
-        optimizer_ft = OPTIMIZER(model_ft.parameters(), lr=BASE_LR)
+    if params =="full":
+        optimizer_ft = OPTIMIZER(model_ft.parameters(), lr=lr)
     else:
-        if MODEL=="resnet":
-            optimizer_ft = OPTIMIZER(model_ft.fc.parameters(), lr=BASE_LR)
-        elif MODEL=="transformer":
-            optimizer_ft = OPTIMIZER(model_ft.heads.parameters(), lr=BASE_LR)
+        if model_name=="resnet":
+            optimizer_ft = OPTIMIZER(model_ft.fc.parameters(), lr=lr)
+        elif model_name=="transformer":
+            optimizer_ft = OPTIMIZER(model_ft.heads.parameters(), lr=lr)
 
     if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
+    #define model
+    payload = {"task": task, "phase": "train", "transform": TRANSFORMATION, "oversamplingrate": oversampling_rate,
+               "split": val_ratio, "resolution":resolution}
+    dsets = {'train': load_dataset(**payload, set="train"),
+             'val':   load_dataset(**payload, set="val")}
+    dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=batch_size,
+                                                   shuffle=True, num_workers=12)
+                    for x in ['train', 'val']}
+
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
-                           num_epochs=NUM_EPOCHS)
+                           num_epochs=num_epochs)
 
     # Save model
     torch.save(model_ft.state_dict(), folder + "/fine_tuned_best_model.pt")
 
     # save the false positives
-    print("Generating List of False Positives in ")
+    print("Generating List of False Positives in the Validation Set")
     generate_false_negative_list(data=dsets["val"], destination=folder, model=model_ft)

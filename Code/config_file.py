@@ -8,10 +8,6 @@ OVERSAMPLING_RATE = 10
 #image resolution
 RESOLUTION = 512
 
-if RESOLUTION==256:
-    BATCH_SIZE=64
-elif RESOLUTION==512:
-    BATCH_SIZE = 16
 # oversampling transformation
 TRANSFORMATION = get_transformer("rotations", resolution=RESOLUTION)
 #"bikelane" or "rim
@@ -33,7 +29,7 @@ OPTIMIZER = optim.RMSprop
 
 # Learning rate parameters
 BASE_LR = 0.001
-EPOCH_DECAY = 40 # number of epochs after which the Learning rate is decayed exponentially.
+EPOCH_DECAY = NUM_EPOCHS +1 # number of epochs after which the Learning rate is decayed exponentially.
 DECAY_WEIGHT = 0.1 # factor by which the learning rate is reduced.
 
 
