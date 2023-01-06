@@ -15,7 +15,7 @@ def get_model(model_name:str, pretrained=True):
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_classes)
     elif model_name == "transformer":
-        model = models.vit_b_16(weights=models.ViT_B_16_Weights)
+        model = models.vit_b_16(weights=models.ViT_B_16_Weights.IMAGENET1K_V1)
         num_ftrs = model.heads.head.in_features
         model.heads = nn.Sequential(OrderedDict([('head', nn.Linear(num_ftrs, num_classes))]))
     return model
