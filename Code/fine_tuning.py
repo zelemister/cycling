@@ -113,7 +113,6 @@ if __name__ == '__main__':
         return best_model
 
 
-
     ##### This is parser stuff
     parser=argparse.ArgumentParser()
     parser.add_argument('--name', type=str, default=EXPERMIMENT_NAME)
@@ -213,7 +212,7 @@ if __name__ == '__main__':
         model_ft.cuda()
     #define model
     payload = {"task": task, "phase": "train", "transform": TRANSFORMATION, "oversamplingrate": oversampling_rate,
-               "split": val_ratio, "resolution":resolution}
+               "split": val_ratio, "resolution":resolution, "model_name": model_name}
     dsets = {'train': load_dataset(**payload, set="train"),
              'val':   load_dataset(**payload, set="val")}
     dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=batch_size,

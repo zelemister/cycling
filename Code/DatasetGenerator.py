@@ -7,12 +7,13 @@ import random
 from transformations import get_transformer
 import torch
 import PIL.Image
-
+from model_loaders import get_model
 from torch.utils.data import DataLoader
 
 
 class load_dataset(Dataset):
-    def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float, resolution=256):
+    def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float,
+                 resolution=256, model_name="resnet"):
         """
         :param task: string; either "bikelane" or "rim"
         :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split of the images, maybe
@@ -23,8 +24,13 @@ class load_dataset(Dataset):
         self.split = split
         self.rate = oversamplingrate
         self.transform = transform
-        self.resolution = resolution
         self.task = task
+        self.model_name = model_name
+
+        if model_name == "resnet":
+            self.resolution = resolution
+        elif model_name == "transformer":
+            self.resolution = 224
         if os.path.exists("../Images" + "_" + str(resolution) + "/" + phase):
             self.image_folder = "../Images" + "_" + str(resolution) + "/" + phase
 
@@ -65,16 +71,16 @@ class load_dataset(Dataset):
             Then we get the sublist which only contains the names of those images
             Then we create our self.Dataset using those created lists.
             """
-            indizes = [i for i, j in enumerate(label_list) if j in [1,2]]
+            indizes = [i for i, j in enumerate(label_list) if j in [1, 2]]
             rim_labels = [label_list[i] for i in indizes]
-            correct_labels = [rim_labels[i]-1 for i in range(len(rim_labels))]
+            correct_labels = [rim_labels[i] - 1 for i in range(len(rim_labels))]
             rim_names = [name_list[i] for i in indizes]
             self.dataset = pd.DataFrame({"Name": rim_names, "Label": correct_labels})
 
         if set == "train":
-            self.dataset = self.dataset.sample(frac=max(split, 1-split), random_state=42)
+            self.dataset = self.dataset.sample(frac=max(split, 1 - split), random_state=42)
         elif set == "val":
-            sample = self.dataset.sample(frac=max(split, 1-split), random_state=42)
+            sample = self.dataset.sample(frac=max(split, 1 - split), random_state=42)
             self.dataset = self.dataset[~self.dataset.index.isin(sample.index)]
         self.dataset = self.dataset.reset_index(drop=True)
 
@@ -96,15 +102,20 @@ class load_dataset(Dataset):
 
     def __len__(self):
         return self.dataset.__len__()
+
+
 """
 # this is testcode to show that batches generate new images for each time a dataloader loads a new batch
 random.seed(123456)
 data = load_dataset(task="bikelane", phase="train", set="train", transform=get_transformer("rotations"),
                     oversamplingrate=2, split=0)
-data2 = load_dataset(task="rim", phase="train", set="train", transform=get_transformer("rotations"),
-                    oversamplingrate=2, split=0)
-dset_loader = DataLoader(data, batch_size=1, shuffle=False)
+dset_loader = DataLoader(data, batch_size=10, shuffle=False)
 
+model = get_model("transformer", pretrained=True)
+for batch in dset_loader:
+    out = model(batch["Image"])
+    print(out)
+    break
 for i in range(5):
     dset_loader = DataLoader(data, batch_size=1, shuffle=False)
     for batch in dset_loader:
