@@ -167,7 +167,7 @@ if __name__ == '__main__':
         if model_name == "resnet":
             batch_size = 64
         elif model_name == "transformer":
-            batch_size = 32
+            batch_size = 16
     elif resolution == 512:
         batch_size = 16
 
