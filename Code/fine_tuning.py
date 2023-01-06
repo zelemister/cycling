@@ -164,7 +164,10 @@ if __name__ == '__main__':
         return optimizer
 
     if resolution == 256:
-        batch_size = 64
+        if model_name == "resnet":
+            batch_size = 64
+        elif model_name == "transformer":
+            batch_size = 32
     elif resolution == 512:
         batch_size = 16
 
