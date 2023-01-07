@@ -83,7 +83,7 @@ class load_dataset(Dataset):
             sample = self.dataset.sample(frac=max(split, 1 - split), random_state=42)
             self.dataset = self.dataset[~self.dataset.index.isin(sample.index)]
 
-        if one_overoversampling>1 and isinstance(one_overoversampling, int):
+        if one_overoversampling>1 and isinstance(one_overoversampling, int) and set == "train":
             ones = self.dataset[self.dataset["Label"]==1]
             data_list = [self.dataset]
             while one_overoversampling > 1:
