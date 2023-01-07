@@ -18,6 +18,8 @@ from overlooked_images import generate_false_negative_list
 from DatasetGenerator import load_dataset
 import shutil
 import argparse
+
+
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
 # this file
 
@@ -59,9 +61,9 @@ if __name__ == '__main__':
 
                 # at the start of  each epoch, reset metric counts
                 running_loss = 0.0
-                #c_matrix = 0
-                preds_list=[]
-                labels_list=[]
+                # c_matrix = 0
+                preds_list = []
+                labels_list = []
 
                 # Iterate over data.
                 for data in dset_loaders[phase]:
@@ -83,11 +85,10 @@ if __name__ == '__main__':
                         optimizer.step()
                     running_loss += loss.item()
 
+                    # c_matrix += confusion_matrix(labels.cpu(), preds.cpu())
 
-                    #c_matrix += confusion_matrix(labels.cpu(), preds.cpu())
-
-                    preds_list=preds_list + list(preds.cpu())
-                    labels_list=labels_list + list(labels.cpu())
+                    preds_list = preds_list + list(preds.cpu())
+                    labels_list = labels_list + list(labels.cpu())
                 epoch_loss, epoch_acc = compute_measures(epoch=epoch, phase=phase,
                                                          running_loss=running_loss, folder=folder,
                                                          preds_list=preds_list, labels_list=labels_list)
@@ -114,45 +115,48 @@ if __name__ == '__main__':
 
 
     ##### This is parser stuff
-    parser=argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, default=EXPERMIMENT_NAME)
     parser.add_argument('--epochs', type=int, default=NUM_EPOCHS)
     parser.add_argument('--oversampling_rate', type=int, default=OVERSAMPLING_RATE)
     parser.add_argument('--resolution', type=int, default=RESOLUTION)
-    #parser.add_argument('--transformation', type=function, default=TRANSFORMATION)
+    # parser.add_argument('--transformation', type=function, default=TRANSFORMATION)
     parser.add_argument('--task', type=str, default=TASK)
     parser.add_argument('--model', type=str, default=MODEL)
     parser.add_argument('--pretrained', type=bool, default=PRETRAINED)
     parser.add_argument('--params', type=str, default=PARAMS)
     parser.add_argument('--val_ratio', type=float, default=VAL_SET_RATIO)
-    #parser.add_argument('--weights', type=float, default=BASE_LR)
-    #parser.add_argument('--optimizer', type=float, default=BASE_LR)
+    # parser.add_argument('--weights', type=float, default=BASE_LR)
+    # parser.add_argument('--optimizer', type=float, default=BASE_LR)
     parser.add_argument('--lr', type=float, default=BASE_LR)
     parser.add_argument('--epoch_decay', type=int, default=EPOCH_DECAY)
     parser.add_argument('--decay_weight', type=float, default=DECAY_WEIGHT)
-
+    parser.add_argument('--one_overoversampling', type=int, default=1)
 
     args = parser.parse_args()
     experiment_name = args.name
     num_epochs = args.epochs
     oversampling_rate = args.oversampling_rate
     resolution = args.resolution
-    #transformation = args.transformation
+    # transformation = args.transformation
     task = args.task
     model_name = args.model
     pretrained = args.pretrained
     params = args.params
     val_ratio = args.val_ratio
-    #weights = args.weights
-    #optimizer = args.optimizer
+    # weights = args.weights
+    # optimizer = args.optimizer
     lr = args.lr
     epoch_decay = args.epoch_decay
     decay_weight = args.decay_weight
+    one_overoversampling = args.one_overoversampling
+
+
     ##### This is parser stuff
 
     # This function changes the learning rate over the training model.
     def exp_lr_scheduler(optimizer, epoch, init_lr=lr, lr_decay_epoch=epoch_decay):
-        #Decay learning rate by a factor of DECAY_WEIGHT every lr_decay_epoch epochs.
+        # Decay learning rate by a factor of DECAY_WEIGHT every lr_decay_epoch epochs.
         lr = init_lr * (decay_weight ** (epoch // lr_decay_epoch))
 
         if epoch % lr_decay_epoch == 0:
@@ -162,6 +166,7 @@ if __name__ == '__main__':
             param_group['lr'] = lr
 
         return optimizer
+
 
     if resolution == 256:
         if model_name == "resnet":
@@ -178,7 +183,6 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
-
     # define destination folder
     folder = "../Results/" + experiment_name
 
@@ -187,11 +191,11 @@ if __name__ == '__main__':
     if not os.path.exists(folder):
         os.mkdir(folder)
     else:
-        folder_changed=folder
+        folder_changed = folder
         i = 2
         while os.path.exists(folder_changed):
             folder_changed = folder + "_" + str(i)
-            i+=1
+            i += 1
         folder = folder_changed
         os.mkdir(folder)
     shutil.copyfile("config_file.py", folder + "/config_file.py")
@@ -199,29 +203,29 @@ if __name__ == '__main__':
     # loss adaptation for imbalanced learning
     weights = torch.FloatTensor(WEIGHTS)
     if torch.cuda.is_available():
-        weights= weights.cuda()
+        weights = weights.cuda()
     criterion = nn.CrossEntropyLoss(weight=weights, reduction='mean')
 
-    if params =="full":
+    if params == "full":
         optimizer_ft = OPTIMIZER(model_ft.parameters(), lr=lr)
     else:
-        if model_name=="resnet":
+        if model_name == "resnet":
             optimizer_ft = OPTIMIZER(model_ft.fc.parameters(), lr=lr)
-        elif model_name=="transformer":
+        elif model_name == "transformer":
             optimizer_ft = OPTIMIZER(model_ft.heads.parameters(), lr=lr)
 
     if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
-    #define model
+    # define model
     payload = {"task": task, "phase": "train", "transform": TRANSFORMATION, "oversamplingrate": oversampling_rate,
-               "split": val_ratio, "resolution":resolution, "model_name": model_name}
+               "split": val_ratio, "resolution": resolution, "model_name": model_name,
+               "one_overoversampling": one_overoversampling}
     dsets = {'train': load_dataset(**payload, set="train"),
-             'val':   load_dataset(**payload, set="val")}
+             'val': load_dataset(**payload, set="val")}
     dset_loaders = {x: torch.utils.data.DataLoader(dsets[x], batch_size=batch_size,
                                                    shuffle=True, num_workers=12)
                     for x in ['train', 'val']}
-
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                            num_epochs=num_epochs)
