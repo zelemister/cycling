@@ -23,6 +23,27 @@ def get_transformer(name: str, resolution = 256):
                                           # kernel size positive uneven number
                                           transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 200))(),
                                           transforms.ToPILImage()])
+    elif name == "rotationsJitter":
+        transformer = transforms.Compose([transforms.ToTensor(),
+                                          # generate a random number between 0 and 1, then multiply by 360 for a
+                                          # random number between 0 and 360
+                                          transforms.RandomRotation(degrees=random.random() * 360),
+                                          #default probability is p=0.5
+                                          transforms.RandomHorizontalFlip(),
+                                          transforms.RandomVerticalFlip(),
+                                          transforms.ColorJitter(brightness=0.5, contrast=0.5,
+                                                                 saturation=0.5)(),
+                                          transforms.ToPILImage()])
+    elif name == "rotationsBlur":
+        transformer = transforms.Compose([transforms.ToTensor(),
+                                          # generate a random number between 0 and 1, then multiply by 360 for a
+                                          # random number between 0 and 360
+                                          transforms.RandomRotation(degrees=random.random() * 360),
+                                          #default probability is p=0.5
+                                          transforms.RandomHorizontalFlip(),
+                                          transforms.RandomVerticalFlip(),
+                                          transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 200))(),
+                                          transforms.ToPILImage()])
     elif name == "all":
         transformer = transforms.Compose([transforms.ToTensor(),
                                           # generate a random number between 0 and 1, then multiply by 360 for a
