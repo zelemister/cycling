@@ -46,7 +46,7 @@ def parse_args(args):
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--oversampling_rate', type=int, default=10)
     parser.add_argument('--resolution', type=int, default=256)
-    parser.add_argument('--transformation', choices=["rotations"], default="rotations")
+    parser.add_argument('--transformation', choices=["rotations", "colorJitter", "gBlur", "all"], default="rotations")
     parser.add_argument('--task', type=str, default="bikelane")
     parser.add_argument('--model', type=str, default="resnet34")
     parser.add_argument('--pretrained', type=bool, default=True)
