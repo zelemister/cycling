@@ -1,23 +1,22 @@
 # from __future__ import print_function, division
+import sys
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import torchvision
-from torchvision import datasets
 import time
 import copy
 import os
 import pandas as pd
-from PIL import ImageFile
-from config_file import *
 from model_loaders import get_model
 from numpy import random
 from sklearn.metrics import confusion_matrix, roc_auc_score
 from overlooked_images import generate_false_negative_list
 from DatasetGenerator import load_dataset
-import shutil
 import argparse
+from transformations import get_transformer
 
 
 # Code mostly copied from https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial/blob/master/main_fine_tuning.py
@@ -39,6 +38,27 @@ def compute_measures(epoch, phase, running_loss, folder, preds_list, labels_list
 
     log.to_csv(log_path, index=False)
     return epoch_loss, epoch_acc
+
+
+def parse_args(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--name', type=str, default="Default_Name")
+    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--oversampling_rate', type=int, default=10)
+    parser.add_argument('--resolution', type=int, default=256)
+    parser.add_argument('--transformation', choices=["rotations"], default="rotations")
+    parser.add_argument('--task', type=str, default="bikelane")
+    parser.add_argument('--model', type=str, default="resnet")
+    parser.add_argument('--pretrained', type=bool, default=True)
+    parser.add_argument('--params', type=str, default="full")
+    parser.add_argument('--val_ratio', type=float, default=0.2)
+    parser.add_argument('--weights', type=int, default=1)
+    parser.add_argument('--optimizer', choices=["RMSProp", "SGD", "Adam"], default="RMSProp")
+    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--epoch_decay', type=int, default=101)
+    parser.add_argument('--decay_weight', type=float, default=0.5)
+    parser.add_argument('--one_overoversampling', type=int, default=1)
+    return parser.parse_args(args)
 
 
 if __name__ == '__main__':
@@ -72,7 +92,8 @@ if __name__ == '__main__':
                     if torch.cuda.is_available():
                         inputs, labels = inputs.cuda(), labels.cuda()
 
-                    # Set gradient to zero to delete history of computations in previous epoch. Track operations so that differentiation can be done automatically.
+                    # Set gradient to zero to delete history of computations in previous epoch. Track operations so
+                    # that differentiation can be done automatically.
                     optimizer.zero_grad()
                     outputs = model(inputs)
                     _, preds = torch.max(outputs.data, 1)
@@ -115,41 +136,36 @@ if __name__ == '__main__':
 
 
     ##### This is parser stuff
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--name', type=str, default=EXPERMIMENT_NAME)
-    parser.add_argument('--epochs', type=int, default=NUM_EPOCHS)
-    parser.add_argument('--oversampling_rate', type=int, default=OVERSAMPLING_RATE)
-    parser.add_argument('--resolution', type=int, default=RESOLUTION)
-    # parser.add_argument('--transformation', type=function, default=TRANSFORMATION)
-    parser.add_argument('--task', type=str, default=TASK)
-    parser.add_argument('--model', type=str, default=MODEL)
-    parser.add_argument('--pretrained', type=bool, default=PRETRAINED)
-    parser.add_argument('--params', type=str, default=PARAMS)
-    parser.add_argument('--val_ratio', type=float, default=VAL_SET_RATIO)
-    # parser.add_argument('--weights', type=float, default=BASE_LR)
-    # parser.add_argument('--optimizer', type=float, default=BASE_LR)
-    parser.add_argument('--lr', type=float, default=BASE_LR)
-    parser.add_argument('--epoch_decay', type=int, default=EPOCH_DECAY)
-    parser.add_argument('--decay_weight', type=float, default=DECAY_WEIGHT)
-    parser.add_argument('--one_overoversampling', type=int, default=1)
 
-    args = parser.parse_args()
+    optimizer_keys = {"RMSProp": optim.RMSprop,
+                      "SGD": optim.SGD,
+                      "Adam": optim.Adam}
+
+    args = parse_args(sys.argv[1:])
     experiment_name = args.name
     num_epochs = args.epochs
     oversampling_rate = args.oversampling_rate
     resolution = args.resolution
-    # transformation = args.transformation
+    transformation = get_transformer(args.transformation, resolution)
     task = args.task
     model_name = args.model
     pretrained = args.pretrained
     params = args.params
     val_ratio = args.val_ratio
-    # weights = args.weights
-    # optimizer = args.optimizer
+    weights = [1, args.weights]
+    optimizer = optimizer_keys[args.optimizer]
     lr = args.lr
     epoch_decay = args.epoch_decay
     decay_weight = args.decay_weight
     one_overoversampling = args.one_overoversampling
+
+    args_list = {"name": args.name, "num_epochs": num_epochs, "oversampling_rate": oversampling_rate,
+                 "resolution": resolution,
+                 "transformation": args.transformation, "task": task, "pretrained": pretrained, "params": params,
+                 "val_ratio": val_ratio,
+                 "weights": args.weights, "optimizer": args.optimizer, "lr": lr, "epoch_decay": epoch_decay,
+                 "decay_weight": decay_weight,
+                 "one_overoversampling": one_overoversampling}
 
 
     ##### This is parser stuff
@@ -198,27 +214,29 @@ if __name__ == '__main__':
             i += 1
         folder = folder_changed
         os.mkdir(folder)
-    shutil.copyfile("config_file.py", folder + "/config_file.py")
+    print("Saving Settings")
+    pd.DataFrame(args_list, index=[0]).to_csv(folder + "/config_file.py", index=False)
+
     model_ft = get_model(model_name, pretrained=pretrained)
     # loss adaptation for imbalanced learning
-    weights = torch.FloatTensor(WEIGHTS)
+    weights = torch.FloatTensor(weights)
     if torch.cuda.is_available():
         weights = weights.cuda()
     criterion = nn.CrossEntropyLoss(weight=weights, reduction='mean')
-
     if params == "full":
-        optimizer_ft = OPTIMIZER(model_ft.parameters(), lr=lr)
+        optimizer_ft = optimizer(model_ft.parameters(), lr=lr)
     else:
         if model_name == "resnet":
-            optimizer_ft = OPTIMIZER(model_ft.fc.parameters(), lr=lr)
+            optimizer_ft = optimizer(model_ft.fc.parameters(), lr=lr)
         elif model_name == "transformer":
-            optimizer_ft = OPTIMIZER(model_ft.heads.parameters(), lr=lr)
+            optimizer_ft = optimizer(model_ft.heads.parameters(), lr=lr)
 
     if torch.cuda.is_available():
         criterion.cuda()
         model_ft.cuda()
     # define model
-    payload = {"task": task, "phase": "train", "transform": TRANSFORMATION, "oversamplingrate": oversampling_rate,
+    print("Building Datasets")
+    payload = {"task": task, "phase": "train", "transform": transformation, "oversamplingrate": oversampling_rate,
                "split": val_ratio, "resolution": resolution, "model_name": model_name,
                "one_overoversampling": one_overoversampling}
     dsets = {'train': load_dataset(**payload, set="train"),
