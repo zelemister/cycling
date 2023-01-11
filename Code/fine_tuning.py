@@ -185,8 +185,10 @@ if __name__ == '__main__':
 
 
     if resolution == 256:
-        if "resnet" in model_name:
+        if model_name in ["resnet34", "resnet18"]:
             batch_size = 64
+        elif model_name == "resnet50":
+            batch_size = 32
         elif model_name == "transformer":
             batch_size = 16
     elif resolution == 512:
