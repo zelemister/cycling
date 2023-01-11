@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 
 class load_dataset(Dataset):
     def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float,
-                 resolution=256, model_name="resnet", one_overoversampling=1):
+                 resolution=256, model_name="resnet34", one_overoversampling=1):
         """
         :param task: string; either "bikelane", "rim", or "one_shot"
         :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split of the images, maybe
@@ -27,7 +27,7 @@ class load_dataset(Dataset):
         self.task = task
         self.model_name = model_name
 
-        if model_name == "resnet":
+        if "resnet" in model_name:
             self.resolution = resolution
         elif model_name == "transformer":
             self.resolution = 224

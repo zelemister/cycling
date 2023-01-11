@@ -7,11 +7,23 @@ def get_model(model_name:str, pretrained=True):
     #https://discuss.pytorch.org/t/how-to-perform-finetuning-in-pytorch/419
     #https://github.com/Spandan-Madan/Pytorch_fine_tuning_Tutorial
     num_classes = 2
-    if model_name == "resnet":
-        if pretrained:
-            model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
-        else:
-            model = models.resnet34()
+    if "resnet" in model_name:
+        if model_name == "resnet34":
+            if pretrained:
+                model = models.resnet34(weights=models.ResNet34_Weights.DEFAULT)
+            else:
+                model = models.resnet34()
+        elif model_name == "resnet50":
+            if pretrained:
+                model = models.resnet50(weights=models.ResNet50_Weights.DEFAULT)
+            else:
+                model = models.resnet50()
+        elif model_name == "resnet18":
+            if pretrained:
+                model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+            else:
+                model = models.resnet18()
+
         num_ftrs = model.fc.in_features
         model.fc = nn.Linear(num_ftrs, num_classes)
     elif model_name == "transformer":
@@ -19,9 +31,10 @@ def get_model(model_name:str, pretrained=True):
         num_ftrs = model.heads.head.in_features
         model.heads = nn.Sequential(OrderedDict([('head', nn.Linear(num_ftrs, num_classes))]))
     return model
-"""
-model1 = get_model("resnet", pretrained=True)
-model2 = get_model("resnet", pretrained=False)
+model1 = get_model("resnet34", pretrained=True)
+model2 = get_model("resnet50", pretrained=False)
+model3 = get_model("resnet18", pretrained=False)
+
 
 model1.state_dict()['conv1.weight'][0][0][0]
-model2.state_dict()['conv1.weight'][0][0][0]"""
+model2.state_dict()['conv1.weight'][0][0][0]

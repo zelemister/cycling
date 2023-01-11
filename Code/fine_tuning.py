@@ -48,7 +48,7 @@ def parse_args(args):
     parser.add_argument('--resolution', type=int, default=256)
     parser.add_argument('--transformation', choices=["rotations"], default="rotations")
     parser.add_argument('--task', type=str, default="bikelane")
-    parser.add_argument('--model', type=str, default="resnet")
+    parser.add_argument('--model', type=str, default="resnet34")
     parser.add_argument('--pretrained', type=bool, default=True)
     parser.add_argument('--params', type=str, default="full")
     parser.add_argument('--val_ratio', type=float, default=0.2)
@@ -185,7 +185,7 @@ if __name__ == '__main__':
 
 
     if resolution == 256:
-        if model_name == "resnet":
+        if "resnet" in model_name:
             batch_size = 64
         elif model_name == "transformer":
             batch_size = 16
@@ -226,7 +226,7 @@ if __name__ == '__main__':
     if params == "full":
         optimizer_ft = optimizer(model_ft.parameters(), lr=lr)
     else:
-        if model_name == "resnet":
+        if "resnet" in model_name:
             optimizer_ft = optimizer(model_ft.fc.parameters(), lr=lr)
         elif model_name == "transformer":
             optimizer_ft = optimizer(model_ft.heads.parameters(), lr=lr)
