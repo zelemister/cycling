@@ -15,7 +15,7 @@ class load_dataset(Dataset):
     def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float,
                  resolution=256, model_name="resnet", one_overoversampling=1):
         """
-        :param task: string; either "bikelane" or "rim"
+        :param task: string; either "bikelane", "rim", or "one_shot"
         :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split of the images, maybe
         :param set: either "train" or "val"
         :param transform: transformationfunction
@@ -41,17 +41,13 @@ class load_dataset(Dataset):
 
         name_list = []
         label_list = []
+        transformed_rim_names = ["x_" + str(x) + ".png" for x in labels_rim["NR_STR,C,254"]]
         for image in os.listdir(self.image_folder):
             label = -1
-            if image[:-4] in labels.Name.values:
-                label = int(labels.loc[labels["Name"] == image[:-4], "Label"].values)
-            elif image[2:-4] in str(labels_rim["NR_STR,C,254"]):
+            if image in transformed_rim_names:
                 label = 2
-            # elif image in labels_d["Name"].values:
-            # if not isnan(labels_d.loc[labels_d["Name"]==image, "Label"]):
-            #    if int(labels_d.loc[labels_d["Name"]==image, "Label"]) in [0,1]:
-
-            #    label = int(labels_d.loc[labels_d["Name"]==image, "Label"])
+            elif image[:-4] in labels.Name.values:
+                label = int(labels.loc[labels["Name"] == image[:-4], "Label"].values)
             elif image in labels_s["Name"].values:
                 if not isnan(labels_s.loc[labels_s["Name"] == image, "Label"]):
                     label = int(labels_s.loc[labels_s["Name"] == image, "Label"])
@@ -71,11 +67,17 @@ class load_dataset(Dataset):
             Then we get the sublist which only contains the names of those images
             Then we create our self.Dataset using those created lists.
             """
+
             indizes = [i for i, j in enumerate(label_list) if j in [1, 2]]
             rim_labels = [label_list[i] for i in indizes]
             correct_labels = [rim_labels[i] - 1 for i in range(len(rim_labels))]
             rim_names = [name_list[i] for i in indizes]
             self.dataset = pd.DataFrame({"Name": rim_names, "Label": correct_labels})
+
+        elif self.task == "one_shot":
+            label_list = [0 if x == 1 else x for x in label_list]
+            label_list = [1 if x == 2 else x for x in label_list]
+            self.dataset = pd.DataFrame({"Name": name_list, "Label": label_list})
 
         if set == "train":
             self.dataset = self.dataset.sample(frac=max(split, 1 - split), random_state=42)
@@ -114,11 +116,13 @@ class load_dataset(Dataset):
 
 
 # this is testcode to show that batches generate new images for each time a dataloader loads a new batch
-
 """
 random.seed(123456)
-data = load_dataset(task="bikelane", phase="train", set="train", transform=get_transformer("rotations"),
-                    oversamplingrate=2, split=0, one_overoversampling=3)
+data = load_dataset(task="one_shot", phase="train", set="train", transform=get_transformer("rotations"),
+                     oversamplingrate=2, split=0)
+#data2 = load_dataset(task="rim", phase="train", set="train", transform=get_transformer("rotations"),
+#                     oversamplingrate=2, split=0)
+
 dset_loader = DataLoader(data, batch_size=10, shuffle=False)
 
 model = get_model("transformer", pretrained=True)
