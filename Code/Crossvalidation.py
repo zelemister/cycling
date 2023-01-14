@@ -173,7 +173,7 @@ if __name__ == "__main__":
         folder = folder_changed
         os.mkdir(folder)
 
-    payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience,
+    payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience, "oversampling_rate":args.oversampling_rate
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "results_folder": folder}
