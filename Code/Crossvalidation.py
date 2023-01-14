@@ -119,8 +119,7 @@ def cross_validation(payload):
         corresponding_acc = 0
 
         patience_counter = 0
-        patience_max = 25
-        while patience_counter <= patience_max or epoch <= min_epochs:
+        while patience_counter < max_patience or epoch <= min_epochs:
             epoch += 1
             train_loss, train_auc, train_acc = train_epoch(model, train_loader, optimizer, loss_fn, device=device)
             val_loss, val_auc, val_acc = val_epoch(model, test_loader, loss_fn, device=device)
@@ -132,7 +131,6 @@ def cross_validation(payload):
                 corresponding_acc = val_acc
                 patience_counter = 0
 
-            best_auc = max(val_auc, best_auc)
             training_progress["epoch"].append(epoch)
             training_progress["train_loss"].append(train_loss)
             training_progress["train_auc"].append(train_auc)
@@ -140,16 +138,16 @@ def cross_validation(payload):
             training_progress["val_loss"].append(val_loss)
             training_progress["val_auc"].append(val_auc)
             training_progress["val_acc"].append(val_acc)
-            print(f"Epoch: {epoch}, Val_Loss: {val_loss}, Val_AUC: {val_auc}, Patience: {patience_counter}")
-        print("/n", "-" * 10)
-        print(f"Fold: {fold}, AUC: {best_auc}, Loss: {corresponding_loss}, ACC: {corresponding_acc}")
+            print(f"Epoch: {epoch}, Val_Loss: {round(val_loss,3)}, Val_AUC: {round(val_auc,3)}, Patience: {patience_counter}")
+        print("-" * 10)
+        print(f"Fold: {fold}, AUC: {round(best_auc, 3)}, Loss: {round(corresponding_loss,3)}, ACC: {round(corresponding_acc,3)}")
         history["Test_AUC"].append(best_auc)
         history["Test_Loss"].append(corresponding_loss)
         history["Test_acc"].append(corresponding_acc)
         history["training_progress"].append(training_progress)
 
     # save the results
-    for i in len(history["training_progress"]):
+    for i in range(len(history["training_progress"])):
         temp = pd.DataFrame(history["training_progress"][i])
         temp.to_csv(os.path.join(results_folder, f"fold_{i + 1}.csv"))
     auc = np.mean(history["Test_AUC"])
