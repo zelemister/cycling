@@ -106,8 +106,8 @@ def cross_validation(payload):
         fold += 1
         train_subsampler = SubsetRandomSampler(train_index)
         test_subsampler = SubsetRandomSampler(test_index)
-        train_loader = DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=12, sampler=train_subsampler)
-        test_loader = DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=12, sampler=test_subsampler)
+        train_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=train_subsampler)
+        test_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=test_subsampler)
         model = generator.new_model()
         optimizer = generator.new_optim(model)
         training_progress = {"epoch": [], "train_loss": [], "train_auc": [], "train_acc": [], "val_loss": [],
@@ -123,7 +123,7 @@ def cross_validation(payload):
         while patience_counter <= patience_max or epoch <= min_epochs:
             epoch += 1
             train_loss, train_auc, train_acc = train_epoch(model, train_loader, optimizer, loss_fn, device=device)
-            val_loss, val_auc, val_acc = val_epoch(model, test_loader, optimizer, loss_fn, device=device)
+            val_loss, val_auc, val_acc = val_epoch(model, test_loader, loss_fn, device=device)
             if val_auc <= best_auc:
                 patience_counter += 1
             else:
