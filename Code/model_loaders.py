@@ -31,6 +31,7 @@ def get_model(model_name:str, pretrained=True):
         num_ftrs = model.heads.head.in_features
         model.heads = nn.Sequential(OrderedDict([('head', nn.Linear(num_ftrs, num_classes))]))
     return model
+"""
 model1 = get_model("resnet34", pretrained=True)
 model2 = get_model("resnet50", pretrained=False)
 model3 = get_model("resnet18", pretrained=False)
@@ -38,3 +39,4 @@ model3 = get_model("resnet18", pretrained=False)
 
 model1.state_dict()['conv1.weight'][0][0][0]
 model2.state_dict()['conv1.weight'][0][0][0]
+"""

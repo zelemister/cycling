@@ -3,7 +3,7 @@ import torch
 import random
 
 
-def get_transformer(name: str, resolution = 256):
+def get_transformer(name: str, resolution=256):
     if name == "rotations":
         transformer = transforms.Compose([transforms.ToTensor(),
                                           # generate a random number between 0 and 1, then multiply by 360 for a
@@ -14,9 +14,9 @@ def get_transformer(name: str, resolution = 256):
                                           transforms.ToPILImage()])
     elif name == "colorJitter":
         transformer = transforms.Compose([transforms.ToTensor(),
-                                          #could use random.random instead of fixed
-                                          #could add option hue with max interval [-0.5, 0.5]
-                                          transforms.ColorJitter(0.5, contrast=0.5, saturation=0.5),
+                                          # could use random.random instead of fixed
+                                          # could add option hue with max interval [-0.5, 0.5]
+                                          transforms.ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
                                           transforms.ToPILImage()])
     elif name == "gBlur":
         transformer = transforms.Compose([transforms.ToTensor(),
@@ -28,7 +28,7 @@ def get_transformer(name: str, resolution = 256):
                                           # generate a random number between 0 and 1, then multiply by 360 for a
                                           # random number between 0 and 360
                                           transforms.RandomRotation(degrees=random.random() * 360),
-                                          #default probability is p=0.5
+                                          # default probability is p=0.5
                                           transforms.RandomHorizontalFlip(),
                                           transforms.RandomVerticalFlip(),
                                           transforms.ColorJitter(brightness=0.5, contrast=0.5,
@@ -39,7 +39,7 @@ def get_transformer(name: str, resolution = 256):
                                           # generate a random number between 0 and 1, then multiply by 360 for a
                                           # random number between 0 and 360
                                           transforms.RandomRotation(degrees=random.random() * 360),
-                                          #default probability is p=0.5
+                                          # default probability is p=0.5
                                           transforms.RandomHorizontalFlip(),
                                           transforms.RandomVerticalFlip(),
                                           transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 200)),
@@ -49,7 +49,7 @@ def get_transformer(name: str, resolution = 256):
                                           # generate a random number between 0 and 1, then multiply by 360 for a
                                           # random number between 0 and 360
                                           transforms.RandomRotation(degrees=random.random() * 360),
-                                          #default probability is p=0.5
+                                          # default probability is p=0.5
                                           transforms.RandomHorizontalFlip(),
                                           transforms.RandomVerticalFlip(),
                                           transforms.ColorJitter(brightness=0.5, contrast=0.5,
@@ -58,7 +58,7 @@ def get_transformer(name: str, resolution = 256):
                                           transforms.ToPILImage()])
     elif name == "grayscale":
         transformer = transforms.Compose([transforms.ToTensor(),
-                                          #can be used to test impact of colour in image
+                                          # can be used to test impact of colour in image
                                           transforms.Grayscale(num_output_channels=3),
                                           transforms.ToPILImage()])
     elif name == "normalize":
@@ -68,6 +68,7 @@ def get_transformer(name: str, resolution = 256):
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
     return transformer
+
 
 """t = get_transformer("rotations", resolution=256)
 t = get_transformer("colorJitter", resolution=256)
