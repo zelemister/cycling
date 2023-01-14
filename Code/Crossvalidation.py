@@ -141,7 +141,7 @@ def cross_validation(payload):
     return auc, loss, acc
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, default="Default_Name")
     parser.add_argument('--min_epochs', type=int, default=80)
