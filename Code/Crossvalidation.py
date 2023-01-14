@@ -106,8 +106,8 @@ def cross_validation(payload):
         fold += 1
         train_subsampler = SubsetRandomSampler(train_index)
         test_subsampler = SubsetRandomSampler(test_index)
-        train_loader = DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=12, sampler=train_subsampler)
-        test_loader = DataLoader(data, batch_size=batch_size, shuffle=True, num_workers=12, sampler=test_subsampler)
+        train_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=train_subsampler)
+        test_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=test_subsampler)
         model = generator.new_model()
         optimizer = generator.new_optim(model)
         training_progress = {"epoch": [], "train_loss": [], "train_auc": [], "train_acc": [], "val_loss": [],
