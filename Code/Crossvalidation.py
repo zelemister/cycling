@@ -13,6 +13,29 @@ import torch.optim as optim
 import torch.nn as nn
 import argparse
 
+class Model_Optim_Gen:
+    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001):
+        self.device = device
+        self.model_name = model_name
+        self.pretrained = pretrained
+        self.optimizer_fn = optimizer_fn
+        self.params = params
+        self.lr = lr
+    def new_model(self):
+        model = get_model(self.model_name, pretrained=self.pretrained)
+        model.to(self.device)
+        return model
+
+    def new_optim(self, model):
+        if self.params == "full":
+            optimizer = self.optimizer_fn(model.parameters(), lr=self.lr)
+        else:
+            if "resnet" in self.model_name:
+                optimizer = self.optimizer_fn(model.fc.parameters(), lr=self.lr)
+            elif self.model_name == "transformer":
+                optimizer = self.optimizer_fn(model.heads.parameters(), lr=self.lr)
+        return optimizer
+
 
 def parse_payload(payload):
     optimizer_keys = {"RMSProp": optim.RMSprop,
@@ -29,11 +52,10 @@ def parse_payload(payload):
     pretrained = payload["pretrained"]
     params = payload["params"]
     weights = [1, payload["weights"]]
-    optimizer = optimizer_keys[payload["optimizer"]]
+    optimizer_fn = optimizer_keys[payload["optimizer"]]
     lr = payload["lr"]
     results_folder = payload["results_folder"]
-    # get model
-    model = get_model(model_name, pretrained=pretrained)
+
 
     # get dataset
     data_payload = {"task": task, "phase": "train", "set": "train", "transform": transformation,
@@ -47,19 +69,11 @@ def parse_payload(payload):
     else:
         device = torch.device("cpu")
 
+    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params, lr=lr)
+
     # get weights
     weights = torch.FloatTensor(weights)
     weights.to(device)
-
-    # get optimizer
-    if params == "full":
-        optimizer = optimizer(model.parameters(), lr=lr)
-    else:
-        if "resnet" in model_name:
-            optimizer = optimizer(model.fc.parameters(), lr=lr)
-        elif model_name == "transformer":
-            optimizer = optimizer(model.heads.parameters(), lr=lr)
-    optimizer.to(device)
 
     # get loss function
     loss_fn = nn.CrossEntropyLoss(weight=weights, reduction="mean")
@@ -76,11 +90,11 @@ def parse_payload(payload):
     elif resolution == 512:
         batch_size = 16
 
-    return model, data, device, optimizer, loss_fn, results_folder, batch_size, min_epochs, max_patience
+    return generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience
 
 
 def cross_validation(payload):
-    model, data, device, optimizer, loss_fn, results_folder, batch_size, min_epochs, max_patience = parse_payload(
+    generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience = parse_payload(
         payload)
 
     # create KFold Object
@@ -94,9 +108,12 @@ def cross_validation(payload):
         test_subsampler = SubsetRandomSampler(test_index)
         train_loader = dataloader(data, batch_size=batch_size, shuffle=True, num_workers=12, sampler=train_subsampler)
         test_loader = dataloader(data, batch_size=batch_size, shuffle=True, num_workers=12, sampler=test_subsampler)
-        epoch = 0
+        model = generator.new_model()
+        optimizer = generator.new_optim(model)
         training_progress = {"epoch": [], "train_loss": [], "train_auc": [], "train_acc": [], "val_loss": [],
                              "val_auc": [], "val_acc": []}
+
+        epoch = 0
         best_auc = 0
         corresponding_loss = 100
         corresponding_acc = 0
