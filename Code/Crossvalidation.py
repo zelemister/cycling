@@ -180,4 +180,11 @@ if __name__ == "main":
                "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "results_folder": folder}
     auc, loss, acc = cross_validation(payload)
+    del payload["results_folder"]
+    payload["auc"] = auc
+    payload["loss"] = loss
+    payload["acc"] = acc
 
+    print(auc, loss, acc)
+    result = pd.DataFrame(payload, index=[0])
+    result.to_csv(os.path.join(folder, "results.csv"))
