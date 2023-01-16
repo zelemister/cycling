@@ -23,7 +23,8 @@ from transformations import get_transformer
 # this file
 
 def compute_measures(epoch, phase, running_loss, folder, preds_list, labels_list):
-    tn, fp, fn, tp = confusion_matrix(labels_list, preds_list).ravel()
+    pred_classes = [0 if x < 0.5 else 1 for x in preds_list]
+    tn, fp, fn, tp = confusion_matrix(labels_list, pred_classes).ravel()
     auc = roc_auc_score(labels_list, preds_list)
     epoch_loss = running_loss
     epoch_acc = (tp + tn) / (tn + tp + fp + fn)
@@ -96,8 +97,8 @@ if __name__ == '__main__':
                     # that differentiation can be done automatically.
                     optimizer.zero_grad()
                     outputs = model(inputs)
-                    _, preds = torch.max(outputs.data, 1)
-
+                    #_, preds = torch.max(outputs.data, 1)
+                    preds = outputs.data.softmax(1).transpose(0, 1)[1]
                     loss = criterion(outputs, labels)
 
                     # backward + optimize only if in training phase

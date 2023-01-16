@@ -104,6 +104,7 @@ def cross_validation(payload):
     history = {"Test_AUC": [], "Test_Loss": [], "Test_acc": [], "training_progress": []}
     for train_index, test_index in splits.split(X=data.dataset["Name"], y=data.dataset["Label"]):
         fold += 1
+        print("-"*20, f"FOLD {fold}", "-"*20)
         train_subsampler = SubsetRandomSampler(train_index)
         test_subsampler = SubsetRandomSampler(test_index)
         train_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=train_subsampler)

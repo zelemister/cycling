@@ -3,7 +3,8 @@ import torch
 
 def compute_measures(labels_list, preds_list):
     auc = roc_auc_score(labels_list, preds_list)
-    tn, fp, fn, tp = confusion_matrix(labels_list, preds_list).ravel()
+    pred_classes = [0 if x < 0.5 else 1 for x in preds_list]
+    tn, fp, fn, tp = confusion_matrix(labels_list, pred_classes).ravel()
     acc = (tp + tn) / (tn + tp + fp + fn)
     return auc, acc
 
@@ -25,7 +26,8 @@ def train_epoch(model, train_loader,optimizer, loss_fn, device=torch.device("cpu
         loss.backward()
         optimizer.step()
         train_loss += loss.item() # maybe * inputs.size(0) to control for uneven batches, but I think the lossfunction does that on its own
-        _, preds = torch.max(output.data, 1)
+        #_, preds = torch.max(output.data, 1)
+        preds = output.data.softmax(1).transpose(0,1)[1]
         preds_list = preds_list + list(preds.cpu())
         labels_list = labels_list + list(labels.cpu())
     train_auc, train_acc = compute_measures(labels_list, preds_list)
@@ -51,7 +53,8 @@ def train_epoch_rim(model, train_loader, optimizer, loss_fn, device = torch.devi
             loss.backward()
             optimizer.step()
             train_loss += loss.item()  # maybe * inputs.size(0) to control for uneven batches, but I think the lossfunction does that on its own
-            _, preds = torch.max(output.data, 1)
+            #_, preds = torch.max(output.data, 1)
+            preds = output.data.softmax(1).transpose(0, 1)[1]
             preds_list = preds_list + list(preds.cpu())
             labels_list = labels_list + list(labels.cpu())
         train_auc, train_acc = compute_measures(labels_list, preds_list)
@@ -70,7 +73,9 @@ def train_epoch_rim(model, train_loader, optimizer, loss_fn, device = torch.devi
             loss = loss_fn(output, labels_phase1)
             loss.backward()
             optimizer[0].step()
-            _, preds_p1 = torch.max(output.data, 1)
+            #_, preds_p1 = torch.max(output.data, 1)
+            preds_p1 = output.data.softmax(1).transpose(0, 1)[1]
+
             inputs = inputs.cpu()
             labels_phase2 = [0 if x == 1 else x for x in labels_phase2]
             labels_phase2 = [1 if x == 2 else x for x in labels_phase2]
@@ -85,7 +90,9 @@ def train_epoch_rim(model, train_loader, optimizer, loss_fn, device = torch.devi
             loss.backward()
             optimizer[1].step()
             #train_loss += loss.item()
-            _, preds_p2 = torch.max(output.data, 1)
+            #_, preds_p2 = torch.max(output.data, 1)
+            preds_p2 = output.data.softmax(1).transpose(0, 1)[1]
+
             preds = [0]*len(labels)
             indizes = [i for i in range(len(preds_p1)) if preds_p1[i] >= cutoff]
             preds = [preds_p2[i] if i in indizes else preds[i] for i in range(len(preds))]
@@ -105,7 +112,8 @@ def val_epoch(model, test_loader, loss_fn, device=torch.device("cpu")):
         output = model(inputs)
         loss=loss_fn(output,labels)
         val_loss+=loss.item()
-        _, preds = torch.max(output.data, 1)
+        #_, preds = torch.max(output.data, 1)
+        preds = output.data.softmax(1).transpose(0,1)[1]
         preds_list = preds_list + list(preds.cpu())
         labels_list = labels_list + list(labels.cpu())
     val_auc, val_acc = compute_measures(labels_list, preds_list)
