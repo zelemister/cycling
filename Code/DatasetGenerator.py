@@ -15,7 +15,7 @@ class load_dataset(Dataset):
     def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float,
                  resolution=256, model_name="resnet34", one_overoversampling=1):
         """
-        :param task: string; either "bikelane", "rim", or "one_shot"
+        :param task: string; either "bikelane", "rim", or "one_shot", "full_data"
         :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split of the images, maybe
         :param set: either "train" or "val"
         :param transform: transformationfunction
@@ -77,6 +77,8 @@ class load_dataset(Dataset):
         elif self.task == "one_shot":
             label_list = [0 if x == 1 else x for x in label_list]
             label_list = [1 if x == 2 else x for x in label_list]
+            self.dataset = pd.DataFrame({"Name": name_list, "Label": label_list})
+        elif self.task == "full_data":
             self.dataset = pd.DataFrame({"Name": name_list, "Label": label_list})
 
         if set == "train":

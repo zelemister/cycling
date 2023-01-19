@@ -7,33 +7,50 @@ from model_loaders import get_model
 from DatasetGenerator import get_model
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import numpy as np
-from training import train_epoch, val_epoch
+from training import train_epoch, val_epoch, train_epoch_rim, val_epoch_rim
 import os
 import torch.optim as optim
 import torch.nn as nn
 import argparse
-
+import random
 class Model_Optim_Gen:
-    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001):
+    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001, stages=1):
         self.device = device
         self.model_name = model_name
         self.pretrained = pretrained
         self.optimizer_fn = optimizer_fn
         self.params = params
         self.lr = lr
+        self.stages=stages
+        self.num_classes = 2
     def new_model(self):
-        model = get_model(self.model_name, pretrained=self.pretrained)
-        model.to(self.device)
+        if self.stages ==1:
+            model = get_model(self.model_name, pretrained=self.pretrained)
+            model.to(self.device)
+        elif self.stages ==2:
+            model_bikes = get_model(self.model_name, pretrained=self.pretrained)
+            num_ftrs = model_bikes.fc.in_features
+            rim_head = nn.Linear(num_ftrs, self.num_classes)
+            model=[model_bikes, rim_head]
         return model
 
     def new_optim(self, model):
-        if self.params == "full":
-            optimizer = self.optimizer_fn(model.parameters(), lr=self.lr)
-        else:
-            if "resnet" in self.model_name:
-                optimizer = self.optimizer_fn(model.fc.parameters(), lr=self.lr)
-            elif self.model_name == "transformer":
-                optimizer = self.optimizer_fn(model.heads.parameters(), lr=self.lr)
+        if self.stages==1:
+            if self.params == "full":
+                optimizer = self.optimizer_fn(model.parameters(), lr=self.lr)
+            else:
+                if "resnet" in self.model_name:
+                    optimizer = self.optimizer_fn(model.fc.parameters(), lr=self.lr)
+                elif self.model_name == "transformer":
+                    optimizer = self.optimizer_fn(model.heads.parameters(), lr=self.lr)
+        elif self.stages==2:
+            if self.params == "full":
+                optimizer_bikes = self.optimizer_fn(model[0].parameters(), lr=self.lr)
+            else:
+                if "resnet" in self.model_name:
+                    optimizer_bikes = self.optimizer_fn(model[0].fc.parameters(), lr=self.lr)
+            optimizer_rims = self.optimizer_fn(model[1].parameters(), lr=self.lr)
+            optimizer = [optimizer_bikes, optimizer_rims]
         return optimizer
 
 
@@ -55,21 +72,29 @@ def parse_payload(payload):
     optimizer_fn = optimizer_keys[payload["optimizer"]]
     lr = payload["lr"]
     results_folder = payload["results_folder"]
+    stages = payload["stages"]
 
+    folder_not_found = True
+    i = 1
+    while folder_not_found:
+        if not os.path.exists(os.path.join(results_folder, f"Run_{i}")):
+            os.mkdir(os.path.join(results_folder, f"Run_{i}"))
+            results_folder = os.path.join(results_folder, f"Run_{i}")
+            folder_not_found = False
+        i+=1
 
     # get dataset
     data_payload = {"task": task, "phase": "train", "set": "train", "transform": transformation,
                     "oversamplingrate": oversampling_rate, "split": 0, "resolution": resolution,
                     "model_name": model_name}
     data = load_dataset(**data_payload)
-
     # get device
     if torch.cuda.is_available():
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
 
-    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params, lr=lr)
+    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params, lr=lr, stages=stages)
 
     # get weights
     weights = torch.FloatTensor(weights)
@@ -93,12 +118,19 @@ def parse_payload(payload):
     return generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience
 
 
-def cross_validation(payload):
+def cross_validation(payload, seed=0):
+    seed = seed
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+
     generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience = parse_payload(
         payload)
 
     # create KFold Object
-    splits = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    splits = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
     fold = 0
     history = {"Test_AUC": [], "Test_Loss": [], "Test_acc": [], "training_progress": []}
@@ -124,6 +156,8 @@ def cross_validation(payload):
             epoch += 1
             train_loss, train_auc, train_acc = train_epoch(model, train_loader, optimizer, loss_fn, device=device)
             val_loss, val_auc, val_acc = val_epoch(model, test_loader, loss_fn, device=device)
+            #train_loss, train_auc, train_acc = train_epoch_rim(model, train_loader, optimizer, loss_fn, device=device, stages=generator.stages)
+            #val_loss, val_auc, val_acc = val_epoch_rim(model, test_loader, loss_fn, device=device, stages=generator.stages)
             if val_auc <= best_auc:
                 patience_counter += 1
             else:
@@ -172,6 +206,8 @@ if __name__ == "__main__":
     parser.add_argument('--weights', type=int, default=1)
     parser.add_argument('--optimizer', choices=["RMSProp", "SGD", "Adam"], default="RMSProp")
     parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--stages', type=int, default=1)
+
     args = parser.parse_args()
 
     # get the folder, where to save results to
@@ -189,10 +225,15 @@ if __name__ == "__main__":
         folder = folder_changed
         os.mkdir(folder)
 
+    # payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience, "oversampling_rate":args.oversampling_rate,
+    #            "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
+    #            "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
+    #            "optimizer": args.optimizer, "lr": args.lr, "stages": args.stages, "results_folder": folder}
     payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience, "oversampling_rate":args.oversampling_rate,
-               "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
+               "resolution": args.resolution, "transformation": args.transformation, "task": "full_data",
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
-               "optimizer": args.optimizer, "lr": args.lr, "results_folder": folder}
+               "optimizer": args.optimizer, "lr": args.lr, "stages": 2, "results_folder": folder}
+
     auc, loss, acc = cross_validation(payload)
     del payload["results_folder"]
     payload["auc"] = auc
