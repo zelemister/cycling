@@ -11,7 +11,7 @@ def test_train(config, seed: int=0):
 
     # define the evaluation metric as return
 
-    _,loss,_ = cross_validation(payload, seed)
+    _, loss, _ = cross_validation(payload, seed)
     return config["lr"]
 configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "transformation": ["rotations", "colorJitter", "gBlur", "all"],
@@ -21,6 +21,5 @@ configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "lr":(0.00001, 0.01)
                                  })
 scenario = Scenario(configspace, deterministic=True, n_trials=50)
-PathPox
 smac = HyperparameterOptimizationFacade(scenario, cross_validation)
 incumbent = smac.optimize()
