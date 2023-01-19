@@ -2,8 +2,6 @@ from ConfigSpace import Configuration, ConfigurationSpace
 import numpy as np
 from smac import HyperparameterOptimizationFacade, Scenario
 from Crossvalidation import cross_validation
-from pathlib import Path
-P
 
 def test_train(config, seed: int=0):
     payload = {"min_epochs": 80, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
