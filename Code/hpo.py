@@ -7,7 +7,7 @@ def test_train(config, seed: int=0):
     payload = {"min_epochs": 80, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": config["transformation"], "task": "bikelane",
                "model": config["model"], "pretrained": True, "params": "full", "weights": config["weights"],
-               "optimizer": config["optimizer"], "lr": config["lr"], "stages": 1, "results_folder": "../Results/smac3_output"}
+               "optimizer": config["optimizer"], "lr": config["lr"], "stages": 1, "results_folder": "../Results/smac3_runs"}
 
     # define the evaluation metric as return
 
