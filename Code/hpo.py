@@ -11,7 +11,7 @@ def test_train(config, seed: int=0):
                "logging": False}
 
     # define the evaluation metric as return
-    print(payload["resolution"])
+    print(payload)
     _, loss, _ = cross_validation(payload, seed)
     return loss
 configspace = ConfigurationSpace({"oversampling_rate":(1,100),
