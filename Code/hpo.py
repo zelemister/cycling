@@ -13,7 +13,7 @@ def test_train(config, seed: int=0):
     # define the evaluation metric as return
 
     _, loss, _ = cross_validation(payload, seed)
-    return config["lr"]
+    return loss
 configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "transformation": ["rotations", "colorJitter", "gBlur", "all"],
                                   "model": ["resnet34","resnet50"],
