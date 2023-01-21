@@ -63,6 +63,7 @@ def parse_payload(payload):
     max_patience = payload["max_patience"]
     oversampling_rate = payload["oversampling_rate"]
     resolution = payload["resolution"]
+    print(resolution)
     transformation = get_transformer(payload["transformation"], resolution)
     task = payload["task"]
     model_name = payload["model"]
