@@ -74,15 +74,6 @@ def parse_payload(payload):
     results_folder = payload["results_folder"]
     stages = payload["stages"]
 
-    folder_not_found = True
-    i = 1
-    while folder_not_found:
-        if not os.path.exists(os.path.join(results_folder, f"Run_{i}")):
-            os.mkdir(os.path.join(results_folder, f"Run_{i}"))
-            results_folder = os.path.join(results_folder, f"Run_{i}")
-            folder_not_found = False
-        i+=1
-
     # get dataset
     data_payload = {"task": task, "phase": "train", "set": "train", "transform": transformation,
                     "oversamplingrate": oversampling_rate, "split": 0, "resolution": resolution,
@@ -182,9 +173,10 @@ def cross_validation(payload, seed=0):
         history["training_progress"].append(training_progress)
 
     # save the results
-    for i in range(len(history["training_progress"])):
-        temp = pd.DataFrame(history["training_progress"][i])
-        temp.to_csv(os.path.join(results_folder, f"fold_{i + 1}.csv"))
+    if payload["logging"]:
+        for i in range(len(history["training_progress"])):
+            temp = pd.DataFrame(history["training_progress"][i])
+            temp.to_csv(os.path.join(results_folder, f"fold_{i + 1}.csv"))
     auc = np.mean(history["Test_AUC"])
     loss = np.mean(history["Test_Loss"])
     acc = np.mean(history["Test_acc"])
