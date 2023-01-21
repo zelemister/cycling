@@ -58,13 +58,10 @@ def parse_payload(payload):
     optimizer_keys = {"RMSProp": optim.RMSprop,
                       "SGD": optim.SGD,
                       "Adam": optim.Adam}
-    print(payload)
     min_epochs = payload["min_epochs"]
     max_patience = payload["max_patience"]
     oversampling_rate = payload["oversampling_rate"]
-    print(payload["resolution"])
     resolution = payload["resolution"]
-    print(resolution)
     transformation = get_transformer(payload["transformation"], resolution)
     task = payload["task"]
     model_name = payload["model"]
