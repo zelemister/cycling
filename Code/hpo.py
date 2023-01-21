@@ -11,7 +11,6 @@ def test_train(config, seed: int=0):
                "logging": False}
 
     # define the evaluation metric as return
-    print(payload)
     _, loss, _ = cross_validation(payload, seed)
     return loss
 configspace = ConfigurationSpace({"oversampling_rate":(1,100),
@@ -22,5 +21,5 @@ configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "lr":(0.00001, 0.01)
                                  })
 scenario = Scenario(configspace, deterministic=True, n_trials=50)
-smac = HyperparameterOptimizationFacade(scenario, cross_validation)
+smac = HyperparameterOptimizationFacade(scenario, test_train)
 incumbent = smac.optimize()
