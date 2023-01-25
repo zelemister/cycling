@@ -185,8 +185,8 @@ def cross_validation(payload, seed=0):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, default="Default_Name")
-    parser.add_argument('--min_epochs', type=int, default=80)
-    parser.add_argument('--max_patience', type=int, default=25)
+    parser.add_argument('--min_epochs', type=int, default=70)
+    parser.add_argument('--max_patience', type=int, default=30)
     parser.add_argument('--oversampling_rate', type=int, default=10)
     parser.add_argument('--resolution', type=int, default=256)
     parser.add_argument('--transformation', choices=["rotations", "colorJitter", "gBlur", "all"], default="rotations")
