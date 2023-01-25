@@ -223,7 +223,7 @@ if __name__ == "__main__":
     payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience, "oversampling_rate":args.oversampling_rate,
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
-               "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder}
+               "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True}
 
     auc, loss, acc = cross_validation(payload)
     del payload["results_folder"]
