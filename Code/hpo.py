@@ -20,6 +20,6 @@ configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "optimizer": ["RMSProp","Adam"],
                                   "lr":(0.00001, 0.01)
                                  })
-scenario = Scenario(configspace, deterministic=True, n_trials=50)
+scenario = Scenario(configspace, deterministic=True, n_trials=100)
 smac = HyperparameterOptimizationFacade(scenario, test_train)
 incumbent = smac.optimize()
