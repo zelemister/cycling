@@ -25,7 +25,6 @@ configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "weights":(1,50)
                                   })
 
-configspace = ConfigurationSpace()
 lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
 configspace.add_hyperparameter(lr)
 
