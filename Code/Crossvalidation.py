@@ -73,6 +73,20 @@ def parse_payload(payload):
     results_folder = payload["results_folder"]
     stages = payload["stages"]
 
+    if not os.path.exists(os.path.split(results_folder)[0]):
+        os.mkdir(os.path.split(results_folder)[0])
+    if not os.path.exists(results_folder):
+        os.mkdir(results_folder)
+    else:
+        folder_changed = results_folder
+        i = 2
+        while os.path.exists(folder_changed):
+            folder_changed = results_folder + "_" + str(i)
+            i += 1
+        results_folder = folder_changed
+        os.mkdir(results_folder)
+
+
     # get dataset
     data_payload = {"task": task, "phase": "train", "set": "train", "transform": transformation,
                     "oversamplingrate": oversampling_rate, "split": 0, "resolution": resolution,
@@ -226,7 +240,6 @@ if __name__ == "__main__":
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True}
 
     auc, loss, acc = cross_validation(payload)
-    del payload["results_folder"]
     payload["auc"] = auc
     payload["loss"] = loss
     payload["acc"] = acc
