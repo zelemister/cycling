@@ -21,8 +21,8 @@ def test_train(config, seed: int=0):
     return loss
 configspace = ConfigurationSpace({"oversampling_rate":(1,100),
                                   "transformation": ["rotations", "colorJitter", "gBlur", "all"],
-                                  "model": ["resnet34","resnet50"],
-                                  "weights":(1,50)
+                                  "model": ["resnet34","resnet50", "resnet18"],
+                                  "optimizer":["RMSProp", "Adam", "SDG"]
                                   })
 
 lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)

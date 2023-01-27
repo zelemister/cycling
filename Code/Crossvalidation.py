@@ -1,3 +1,5 @@
+import copy
+
 import pandas as pd
 import torch.cuda
 from sklearn.model_selection import StratifiedKFold
@@ -132,7 +134,9 @@ def cross_validation(payload, seed=0):
 
     generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience = parse_payload(
         payload)
-
+    train_data = copy.deepcopy(data)
+    test_data = copy.deepcopy(data)
+    test_data.set = "val"
     # create KFold Object
     splits = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
@@ -143,16 +147,16 @@ def cross_validation(payload, seed=0):
         print("-"*20, f"FOLD {fold}", "-"*20)
         train_subsampler = SubsetRandomSampler(train_index)
         test_subsampler = SubsetRandomSampler(test_index)
-        train_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=train_subsampler)
-        test_loader = DataLoader(data, batch_size=batch_size, num_workers=12, sampler=test_subsampler)
+        train_loader = DataLoader(train_data, batch_size=batch_size, num_workers=12, sampler=train_subsampler)
+        test_loader = DataLoader(test_data, batch_size=batch_size, num_workers=12, sampler=test_subsampler)
         model = generator.new_model()
         optimizer = generator.new_optim(model)
         training_progress = {"epoch": [], "train_loss": [], "train_auc": [], "train_acc": [], "val_loss": [],
                              "val_auc": [], "val_acc": []}
 
         epoch = 0
-        best_auc = 0
-        corresponding_loss = 100
+        best_loss = 1000
+        corresponding_auc = 0
         corresponding_acc = 0
 
         patience_counter = 0
@@ -162,11 +166,11 @@ def cross_validation(payload, seed=0):
             val_loss, val_auc, val_acc = val_epoch(model, test_loader, loss_fn, device=device)
             #train_loss, train_auc, train_acc = train_epoch_rim(model, train_loader, optimizer, loss_fn, device=device, stages=generator.stages)
             #val_loss, val_auc, val_acc = val_epoch_rim(model, test_loader, loss_fn, device=device, stages=generator.stages)
-            if val_auc <= best_auc:
+            if val_loss >= best_loss:
                 patience_counter += 1
             else:
-                best_auc = val_auc
-                corresponding_loss = val_loss
+                best_loss = val_loss
+                corresponding_auc = val_auc
                 corresponding_acc = val_acc
                 patience_counter = 0
 
@@ -179,9 +183,9 @@ def cross_validation(payload, seed=0):
             training_progress["val_acc"].append(val_acc)
             print(f"Epoch: {epoch}, Val_Loss: {round(val_loss,3)}, Val_AUC: {round(val_auc,3)}, Patience: {patience_counter}")
         print("-" * 10)
-        print(f"Fold: {fold}, AUC: {round(best_auc, 3)}, Loss: {round(corresponding_loss,3)}, ACC: {round(corresponding_acc,3)}")
-        history["Test_AUC"].append(best_auc)
-        history["Test_Loss"].append(corresponding_loss)
+        print(f"Fold: {fold}, AUC: {round(corresponding_auc, 3)}, Loss: {round(best_loss,3)}, ACC: {round(corresponding_acc,3)}")
+        history["Test_AUC"].append(corresponding_auc)
+        history["Test_Loss"].append(best_loss)
         history["Test_acc"].append(corresponding_acc)
         history["training_progress"].append(training_progress)
 
