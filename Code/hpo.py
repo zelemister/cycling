@@ -12,7 +12,7 @@ def test_train(config, seed: int=0):
     """
     payload = {"min_epochs": 70, "max_patience": 30, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": config["transformation"], "task": "bikelane",
-               "model": config["model"], "pretrained": True, "params": "full", "weights": config["weights"],
+               "model": config["model"], "pretrained": True, "params": "full", "weights": 1,
                "optimizer": "Adam", "lr": config["lr"], "stages": 1, "results_folder": "../Results/27_01_smac",
                "logging": True}
 
