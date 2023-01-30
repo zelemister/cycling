@@ -22,12 +22,12 @@ This might also just take the "worst" predictions, aka, those where the model is
 even though it's one.
 """
 
-def generate_false_negative_list(data:Dataset, destination:str, model):
+def generate_false_negative_list(data:Dataset, subset, destination:str, model):
 
     #read model
     model.cpu()
     model.eval()
-
+    data.dataset=data.dataset.iloc[subset]
 
     list=pd.DataFrame({"Name": [], "prob": []})
 
@@ -51,7 +51,6 @@ def generate_false_negative_list(data:Dataset, destination:str, model):
             pred_label=torch.max(out, 1)[1]
             if pred_label==0:
                 list.loc[len(list)]= [name, one_pred.item()]
-    print()
     list.to_csv(destination + "/overlooked_images.csv")
 """
 data_transforms = get_transformer("normalize")
