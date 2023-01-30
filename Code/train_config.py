@@ -53,7 +53,7 @@ if __name__ == "__main__":
     frac = 0.2
     generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience = parse_payload(payload)
     model = generator.new_model()
-    optimizer = generator.optimizer_fn(model)
+    optimizer = generator.new_optim(model)
     train_data = copy.deepcopy(data)
     train_data.dataset = train_data.dataset.sample(frac=max(frac, 1 - frac), random_state=42)
     test_data = copy.deepcopy(data)
