@@ -14,7 +14,7 @@ def test_train(config, seed: int=0):
                "resolution": 256, "transformation": config["transformation"], "task": "bikelane",
                "model": config["model"], "pretrained": True, "params": "full", "weights": 1,
                "optimizer": "Adam", "lr": config["lr"], "stages": 1, "results_folder": "../Results/27_01_smac",
-               "logging": True}
+               "logging": False}
 
     # define the evaluation metric as return
     _, loss, _ = cross_validation(payload, seed)
