@@ -15,7 +15,6 @@ import torch.optim as optim
 import torch.nn as nn
 import argparse
 import random
-from overlooked_images import generate_false_negative_list
 class Model_Optim_Gen:
     def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001, stages=1):
         self.device = device

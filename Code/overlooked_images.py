@@ -22,12 +22,11 @@ This might also just take the "worst" predictions, aka, those where the model is
 even though it's one.
 """
 
-def generate_false_negative_list(data:Dataset, subset, destination:str, model):
+def generate_false_negative_list(data:Dataset, destination:str, model):
 
     #read model
     model.cpu()
     model.eval()
-    data.dataset=data.dataset.iloc[subset]
 
     list=pd.DataFrame({"Name": [], "prob": []})
 
