@@ -56,11 +56,13 @@ if __name__ == "__main__":
     optimizer = generator.new_optim(model)
     train_data = copy.deepcopy(data)
     train_data.dataset = train_data.dataset.sample(frac=max(frac, 1 - frac), random_state=42)
+    train_data.dataset = train_data.dataset.reset_index(drop=True)
+
     test_data = copy.deepcopy(data)
     test_data.set= "val"
     test_sample = data.dataset.sample(frac=max(frac, 1 - frac), random_state=42)
     test_data.dataset[~test_data.dataset.index.isin(test_sample.index)]
-
+    test_data.dataset = test_data.dataset.reset_index(drop=True)
     epoch=0
     patience_counter = 0
     best_loss = 10000
