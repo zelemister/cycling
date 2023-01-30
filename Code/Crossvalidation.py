@@ -173,7 +173,6 @@ def cross_validation(payload, seed=0, k=5):
                 best_loss = val_loss
                 corresponding_auc = val_auc
                 corresponding_acc = val_acc
-                best_model = copy.deepcopy(model)
                 patience_counter = 0
 
             training_progress["epoch"].append(epoch)
@@ -199,9 +198,6 @@ def cross_validation(payload, seed=0, k=5):
     auc = np.mean(history["Test_AUC"])
     loss = np.mean(history["Test_Loss"])
     acc = np.mean(history["Test_acc"])
-    if k==1:
-        generate_false_negative_list(test_data, subset=test_index, destination=results_folder, model=best_model)
-        return auc, loss, acc, best_model
     return auc, loss, acc
 
 
@@ -221,7 +217,6 @@ if __name__ == "__main__":
     parser.add_argument('--optimizer', choices=["RMSProp", "SGD", "Adam"], default="RMSProp")
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--stages', type=int, default=1)
-    parser.add_argument('--k', type=int, default=5)
 
     args = parser.parse_args()
 
@@ -249,9 +244,7 @@ if __name__ == "__main__":
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True}
 
-    if args.k ==1:
-        auc, loss, acc, model = cross_validation(payload, k=args.k)
-    else: auc, loss, acc = cross_validation(payload, k=args.k)
+    auc, loss, acc = cross_validation(payload)
 
     payload["auc"] = auc
     payload["loss"] = loss
@@ -260,4 +253,4 @@ if __name__ == "__main__":
     print(auc, loss, acc)
     result = pd.DataFrame(payload, index=[0])
     result.to_csv(os.path.join(folder, "results.csv"))
-    torch.save(model.state_dict(), os.path.join(folder, "trained_model.pt"))
+    #torch.save(model.state_dict(), os.path.join(folder, "trained_model.pt"))
