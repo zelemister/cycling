@@ -123,6 +123,11 @@ def parse_payload(payload):
 
     return generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience
 
+def save_results(history, folder, logging=True):
+    if logging:
+        for i in range(len(history["training_progress"])):
+            temp = pd.DataFrame(history["training_progress"][i])
+            temp.to_csv(os.path.join(folder, f"fold_{i + 1}.csv"))
 
 def cross_validation(payload, seed=0, k=5):
     seed = seed
@@ -138,7 +143,7 @@ def cross_validation(payload, seed=0, k=5):
     test_data = copy.deepcopy(data)
     test_data.set = "val"
     # create KFold Object
-    splits = StratifiedKFold(n_splits=k, shuffle=True, random_state=42)
+    splits = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
     fold = 0
     history = {"Test_AUC": [], "Test_Loss": [], "Test_acc": [], "training_progress": []}
@@ -173,6 +178,8 @@ def cross_validation(payload, seed=0, k=5):
                 corresponding_auc = val_auc
                 corresponding_acc = val_acc
                 patience_counter = 0
+                if k==1:
+                    best_model=copy.deepcopy(model)
 
             training_progress["epoch"].append(epoch)
             training_progress["train_loss"].append(train_loss)
@@ -182,18 +189,22 @@ def cross_validation(payload, seed=0, k=5):
             training_progress["val_auc"].append(val_auc)
             training_progress["val_acc"].append(val_acc)
             print(f"Epoch: {epoch}, Val_Loss: {round(val_loss,3)}, Val_AUC: {round(val_auc,3)}, Patience: {patience_counter}")
+
         print("-" * 10)
         print(f"Fold: {fold}, AUC: {round(corresponding_auc, 3)}, Loss: {round(best_loss,3)}, ACC: {round(corresponding_acc,3)}")
         history["Test_AUC"].append(corresponding_auc)
         history["Test_Loss"].append(best_loss)
         history["Test_acc"].append(corresponding_acc)
         history["training_progress"].append(training_progress)
-
+        if k==1:
+            save_results(history, results_folder, payload["logging"])
+            auc = np.mean(history["Test_AUC"])
+            loss = np.mean(history["Test_Loss"])
+            acc = np.mean(history["Test_acc"])
+            torch.save(best_model.state_dict(), os.path.join(results_folder, "trained_model.pt"))
+            return auc, loss, acc
     # save the results
-    if payload["logging"]:
-        for i in range(len(history["training_progress"])):
-            temp = pd.DataFrame(history["training_progress"][i])
-            temp.to_csv(os.path.join(results_folder, f"fold_{i + 1}.csv"))
+    save_results(history, results_folder,payload["logging"])
     auc = np.mean(history["Test_AUC"])
     loss = np.mean(history["Test_Loss"])
     acc = np.mean(history["Test_acc"])
@@ -216,7 +227,7 @@ if __name__ == "__main__":
     parser.add_argument('--optimizer', choices=["RMSProp", "SGD", "Adam"], default="RMSProp")
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--stages', type=int, default=1)
-
+    parser.add_argument('--k', type=int, default=5) #if k==1, then the model is trained instead
     args = parser.parse_args()
 
     # get the folder, where to save results to
