@@ -79,12 +79,12 @@ def parse_payload(payload):
 
     path = Path(results_folder)
     if not path.exists():
-        path.mkdir()
+        path.mkdir(parents=True)
     i=1
     while path.joinpath(f"Config_{i}").exists():
         i+=1
     results_folder = path.joinpath(f"Config_{i}")
-    results_folder.mkdir()
+    results_folder.mkdir(parents=True)
 
 
     # get dataset
