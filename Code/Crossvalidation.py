@@ -15,6 +15,8 @@ import torch.optim as optim
 import torch.nn as nn
 import argparse
 import random
+from pathlib import Path
+
 class Model_Optim_Gen:
     def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001, stages=1):
         self.device = device
@@ -75,18 +77,14 @@ def parse_payload(payload):
     results_folder = payload["results_folder"]
     stages = payload["stages"]
 
-    if not os.path.exists(os.path.split(results_folder)[0]):
-        os.mkdir(os.path.split(results_folder)[0])
-    if not os.path.exists(results_folder):
-        os.mkdir(results_folder)
-    else:
-        folder_changed = results_folder
-        i = 2
-        while os.path.exists(folder_changed):
-            folder_changed = results_folder + "_" + str(i)
-            i += 1
-        results_folder = folder_changed
-        os.mkdir(results_folder)
+    path = Path(results_folder)
+    if not path.exists():
+        path.mkdir()
+    i=1
+    while path.joinpath(f"Config_{i}").exists():
+        i+=1
+    results_folder = path.joinpath(f"Config_{i}")
+    results_folder.mkdir()
 
 
     # get dataset
