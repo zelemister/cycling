@@ -163,7 +163,7 @@ def cross_validation(payload, seed=0, k=5):
         corresponding_acc = 0
 
         patience_counter = 0
-        while patience_counter < max_patience or epoch <= min_epochs or epoch >= 300:
+        while (patience_counter < max_patience or epoch <= min_epochs) and epoch <= 300:
             epoch += 1
             train_loss, train_auc, train_acc = train_epoch(model, train_loader, optimizer, loss_fn, device=device)
             val_loss, val_auc, val_acc = val_epoch(model, test_loader, loss_fn, device=device)
