@@ -33,7 +33,7 @@ class load_dataset(Dataset):
             self.resolution = 224
         if os.path.exists("../Images" + "_" + str(resolution) + "/" + phase):
             self.image_folder = "../Images" + "_" + str(resolution) + "/" + phase
-
+        else: self.image_folder="Images_256"
         labels = pd.read_csv("../labeling_clean.csv")
         labels_s = pd.read_csv("../labeling_steffen.csv")
         # labels_d = pd.read_csv("../labeling_daniel.csv")
