@@ -270,7 +270,7 @@ if __name__ == "__main__":
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True,
                "save_model":args.save_model}
 
-    auc, loss, acc = cross_validation(payload)
+    auc, loss, acc = cross_validation(payload, k=args.k)
 
     payload["auc"] = auc
     payload["loss"] = loss
