@@ -208,7 +208,7 @@ def cross_validation(payload, seed=0, k=5):
         history["training_progress"].append(training_progress)
         if payload["save_model"]:
             torch.save(best_model.state_dict(), os.path.join(results_folder, f"model_{fold}.pt"))
-            predictions = get_prediction_list(best_model, train_loader)
+            predictions = get_prediction_list(best_model, train_loader, device=device)
             predictions.to_csv(results_folder.joinpath(f"predictions_{fold}.csv"))
         if k==1:
             save_results(history, results_folder, payload["logging"])
