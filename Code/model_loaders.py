@@ -40,14 +40,20 @@ def get_model(model_name:str, pretrained=True, params_path=None):
     return model
 
 class FilterModel(nn.Module):
-    def __init__(self, model, threshold:int, num_classes):
+    def __init__(self, model, threshold:float, num_classes):
         super(FilterModel, self).__init__()
         #the bikelane model is not getting trained, only the rim_layer
         for param in model.parameters():
             param.requires_grad = False
         self.model = model
         self.threshold = threshold
-        self.rim_layer = nn.Linear(model.fc.in_features, num_classes)
+        fts = model.fc.in_features
+        self.rim_layer = nn.Sequential(nn.Linear(fts, fts),
+                      nn.Linear(fts, fts),
+                      nn.Linear(fts, fts),
+                      nn.Linear(fts, fts),
+                      nn.Linear(fts, num_classes)
+                      )
 
     def forward(self, x):
         x = self.model.conv1(x)

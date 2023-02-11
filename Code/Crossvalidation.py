@@ -5,8 +5,7 @@ import torch.cuda
 from sklearn.model_selection import StratifiedKFold
 from DatasetGenerator import load_dataset
 from transformations import get_transformer
-from model_loaders import get_model
-from DatasetGenerator import get_model
+from model_loaders import get_model, FilterModel
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import numpy as np
 from training import train_epoch, val_epoch, train_epoch_rim, val_epoch_rim
@@ -18,7 +17,7 @@ import random
 from pathlib import Path
 
 class Model_Optim_Gen:
-    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001, stages=1):
+    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001, stages=1, quantile=0.9):
         self.device = device
         self.model_name = model_name
         self.pretrained = pretrained
@@ -27,15 +26,23 @@ class Model_Optim_Gen:
         self.lr = lr
         self.stages=stages
         self.num_classes = 2
+        self.k = 1
+        self.quantile = quantile
+        self.path = Path("../Bikelane_tunedFor2Phase/Config_1/")
     def new_model(self):
         if self.stages ==1:
             model = get_model(self.model_name, pretrained=self.pretrained)
             model.to(self.device)
-        elif self.stages ==2:
-            model_bikes = get_model(self.model_name, pretrained=self.pretrained)
-            num_ftrs = model_bikes.fc.in_features
-            rim_head = nn.Linear(num_ftrs, self.num_classes)
-            model=[model_bikes, rim_head]
+        elif self.stages==2:
+            temp_model = get_model(self.model_name)
+            temp_model.load_state_dict(torch.load(self.path.joinpath(f"model_{self.k}.pt"),
+                                             map_location=self.device))
+            predictions = pd.read_csv(self.path.joinpath(f"predictions_{self.k}.pt"))
+            predictions = predictions.sort_values(by='prediction', ascending=False)
+            indices = [i for i in range(len(predictions)) if predictions.label[i] == 1]
+            threshold = np.quantile(indices, self.quantile)
+            model = FilterModel(temp_model, threshold=threshold, num_classes=self.num_classes)
+            self.k +=1
         return model
 
     def new_optim(self, model):
@@ -48,13 +55,7 @@ class Model_Optim_Gen:
                 elif self.model_name == "transformer":
                     optimizer = self.optimizer_fn(model.heads.parameters(), lr=self.lr)
         elif self.stages==2:
-            if self.params == "full":
-                optimizer_bikes = self.optimizer_fn(model[0].parameters(), lr=self.lr)
-            else:
-                if "resnet" in self.model_name:
-                    optimizer_bikes = self.optimizer_fn(model[0].fc.parameters(), lr=self.lr)
-            optimizer_rims = self.optimizer_fn(model[1].parameters(), lr=self.lr)
-            optimizer = [optimizer_bikes, optimizer_rims]
+            optimizer = self.optimizer_fn(model.rim_layer.parameters(), lr=self.lr)
         return optimizer
 
 
