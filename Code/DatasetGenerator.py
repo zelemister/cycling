@@ -9,7 +9,7 @@ import torch
 import PIL.Image
 from model_loaders import get_model
 from torch.utils.data import DataLoader
-
+import numpy as np
 
 class load_dataset(Dataset):
     def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float,
@@ -34,26 +34,18 @@ class load_dataset(Dataset):
         if os.path.exists("../Images" + "_" + str(resolution) + "/" + phase):
             self.image_folder = "../Images" + "_" + str(resolution) + "/" + phase
         else: self.image_folder="../Images_256"
-        labels = pd.read_csv("../labeling_clean.csv")
-        labels_s = pd.read_csv("../labeling_steffen.csv")
-        # labels_d = pd.read_csv("../labeling_daniel.csv")
-        labels_rim = pd.read_csv("../RIM_Labels.csv")
 
-        name_list = []
-        label_list = []
-        transformed_rim_names = ["x_" + str(x) + ".png" for x in labels_rim["NR_STR,C,254"]]
-        for image in os.listdir(self.image_folder):
-            label = -1
-            if image in transformed_rim_names:
-                label = 2
-            elif image[:-4] in labels.Name.values:
-                label = int(labels.loc[labels["Name"] == image[:-4], "Label"].values)
-            elif image in labels_s["Name"].values:
-                if not isnan(labels_s.loc[labels_s["Name"] == image, "Label"]):
-                    label = int(labels_s.loc[labels_s["Name"] == image, "Label"])
-            if label in [0, 1, 2]:
-                name_list.append(image)
-                label_list.append(label)
+        data = pd.read_csv("../labels_complete.csv")
+        if phase in ["train", "test"]:
+            data = data.loc[(data.phase == phase) & [not x for x in np.isnan(data["Label"])]]
+            data.Label = data.Label.astype(int)
+            label_list = data.Label.to_list()
+            name_list = data.Name.to_list()
+        elif phase == "complete_data":
+            data = data.loc[[not x for x in np.isnan(data["Label"])]]
+            data.Label = data.Label.astype(int)
+            label_list = data.Label.to_list()
+            name_list = data.Name.to_list()
 
         if self.task == "bikelane":
             # this should set all "2" to "1", such that rims count as bikelanes
@@ -111,32 +103,32 @@ class load_dataset(Dataset):
 
         image = get_transformer("normalize", resolution=self.resolution)(image)
 
-        return {"Image": image, "Label": label}
+        return {"Image": image, "Label": label, "Name": self.dataset.loc[item].Name}
 
     def __len__(self):
         return self.dataset.__len__()
 
 
 # this is testcode to show that batches generate new images for each time a dataloader loads a new batch
-"""
-random.seed(123456)
-data = load_dataset(task="one_shot", phase="train", set="train", transform=get_transformer("rotations"),
-                     oversamplingrate=2, split=0)
-#data2 = load_dataset(task="rim", phase="train", set="train", transform=get_transformer("rotations"),
-#                     oversamplingrate=2, split=0)
+if __name__=="__main__":
+    random.seed(123456)
+    data = load_dataset(task="one_shot", phase="train", set="train", transform=get_transformer("rotations"),
+                         oversamplingrate=2, split=0)
+    #data2 = load_dataset(task="rim", phase="train", set="train", transform=get_transformer("rotations"),
+    #                     oversamplingrate=2, split=0)
+    data2 = load_dataset(task="one_shot", phase="complete_data", set="train", transform=get_transformer("rotations"),
+                         oversamplingrate=2, split=0)
 
-dset_loader = DataLoader(data, batch_size=10, shuffle=False)
+    dset_loader = DataLoader(data, batch_size=10, shuffle=False)
 
-model = get_model("transformer", pretrained=True)
-for batch in dset_loader:
-    out = model(batch["Image"])
-    print(out)
-    break
-for i in range(5):
-    dset_loader = DataLoader(data, batch_size=1, shuffle=False)
+    model = get_model("resnet18", pretrained=True)
     for batch in dset_loader:
-        if batch["Label"] == 1:
-            img=transforms.ToPILImage()(batch["Image"].squeeze(0))
-            img.show()
-        #break
-"""
+        out = model(batch["Image"])
+        print(out)
+    for i in range(5):
+        dset_loader = DataLoader(data, batch_size=1, shuffle=False)
+        for batch in dset_loader:
+            if batch["Label"] == 1:
+                img=transforms.ToPILImage()(batch["Image"].squeeze(0))
+                img.show()
+            #break

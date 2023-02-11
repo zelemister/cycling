@@ -110,16 +110,16 @@ def train_epoch_rim(model, train_loader, optimizer, loss_fn, device=torch.device
 
         return train_loss, train_auc, train_acc
 
-def val_epoch(model, test_loader, loss_fn, device=torch.device("cpu")):
+def val_epoch(model, test_loader, loss_fn, device=torch.device("cpu"), return_lists=False):
     model.eval()  # Set model to training mode
     val_loss = 0
     preds_list = []
     labels_list = []
-
+    names_list = []
     for data in test_loader:
         inputs = data["Image"]
         labels = data["Label"]
-
+        names = data["Name"]
         inputs, labels = inputs.to(device), labels.to(device)
         output = model(inputs)
         loss = loss_fn(output, labels)
@@ -128,8 +128,10 @@ def val_epoch(model, test_loader, loss_fn, device=torch.device("cpu")):
         preds = output.data.softmax(1).transpose(0, 1)[1]
         preds_list = preds_list + list(preds.cpu())
         labels_list = labels_list + list(labels.cpu())
+        names_list = names_list + names
     val_auc, val_acc = compute_measures(labels_list, preds_list)
-
+    if return_lists:
+        return val_loss, val_auc, val_acc, labels_list, preds_list, names_list
     return val_loss, val_auc, val_acc
 
 
