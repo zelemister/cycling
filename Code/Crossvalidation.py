@@ -8,7 +8,7 @@ from transformations import get_transformer
 from model_loaders import get_model, FilterModel
 from torch.utils.data import DataLoader, SubsetRandomSampler
 import numpy as np
-from training import train_epoch, val_epoch, train_epoch_rim, val_epoch_rim
+from training import train_epoch, val_epoch
 import os
 import torch.optim as optim
 import torch.nn as nn
@@ -28,7 +28,7 @@ class Model_Optim_Gen:
         self.num_classes = 2
         self.k = 1
         self.quantile = quantile
-        self.path = Path("../Bikelane_tunedFor2Phase/Config_1/")
+        self.path = Path("../Results/Bikelane_tunedFor2Phase/Config_1/")
     def new_model(self):
         if self.stages ==1:
             model = get_model(self.model_name, pretrained=self.pretrained)
@@ -37,10 +37,11 @@ class Model_Optim_Gen:
             temp_model = get_model(self.model_name)
             temp_model.load_state_dict(torch.load(self.path.joinpath(f"model_{self.k}.pt"),
                                              map_location=self.device))
-            predictions = pd.read_csv(self.path.joinpath(f"predictions_{self.k}.pt"))
+            predictions = pd.read_csv(self.path.joinpath(f"predictions_{self.k}.csv"))
             predictions = predictions.sort_values(by='prediction', ascending=False)
             indices = [i for i in range(len(predictions)) if predictions.label[i] == 1]
-            threshold = np.quantile(indices, self.quantile)
+            threshold_index = np.quantile(indices, self.quantile)
+            threshold = predictions.prediction[round(threshold_index)]
             model = FilterModel(temp_model, threshold=threshold, num_classes=self.num_classes)
             self.k +=1
         return model
@@ -77,7 +78,7 @@ def parse_payload(payload):
     lr = payload["lr"]
     results_folder = payload["results_folder"]
     stages = payload["stages"]
-
+    quantile = payload["quantile"]
     path = Path(results_folder)
     if not path.exists():
         path.mkdir(parents=True)
@@ -99,7 +100,8 @@ def parse_payload(payload):
     else:
         device = torch.device("cpu")
 
-    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params, lr=lr, stages=stages)
+    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params,
+                                lr=lr, stages=stages, quantile=quantile)
 
     # get weights
     weights = torch.FloatTensor(weights)
