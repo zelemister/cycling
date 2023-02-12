@@ -5,7 +5,7 @@ from Crossvalidation import cross_validation
 from pathlib import Path
 
 def test_train(config, seed: int=0):
-    payload = {"min_epochs": 70, "max_patience": 30, "oversampling_rate": config["oversampling_rate"],
+    payload = {"min_epochs": 100, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": "all", "task": "one_shot",
                "model": "resnet34", "pretrained": True, "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": 1, "results_folder": "../Results/smac_runs/2Phase_Rims",
