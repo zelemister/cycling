@@ -50,8 +50,6 @@ class FilterModel(nn.Module):
         fts = model.fc.in_features
         self.rim_layer = nn.Sequential(nn.Linear(fts, fts),
                       nn.Linear(fts, fts),
-                      nn.Linear(fts, fts),
-                      nn.Linear(fts, fts),
                       nn.Linear(fts, num_classes)
                       )
 
