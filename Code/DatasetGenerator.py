@@ -33,7 +33,7 @@ class load_dataset(Dataset):
             self.resolution = 224
         if os.path.exists("../Images" + "_" + str(resolution) + "/" + phase):
             self.image_folder = "../Images" + "_" + str(resolution) + "/" + phase
-        else: self.image_folder="../Images_256"
+        else: self.image_folder="../Images_" + str(resolution)
 
         data = pd.read_csv("../labels_complete.csv")
         if phase in ["train", "test"]:
