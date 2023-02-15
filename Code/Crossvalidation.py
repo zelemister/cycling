@@ -246,6 +246,8 @@ if __name__ == "__main__":
     parser.add_argument('--stages', type=int, default=1)
     parser.add_argument('--k', type=int, default=5) #if k==1, then the model is trained instead
     parser.add_argument('--save_model', type=bool, default=False)
+    parser.add_argument('--quantile', type=float, default=0.9)
+
     args = parser.parse_args()
 
     # get the folder, where to save results to
@@ -271,7 +273,7 @@ if __name__ == "__main__":
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True,
-               "save_model":args.save_model}
+               "save_model":args.save_model, "quantile":args.quantile}
 
     auc, loss, acc = cross_validation(payload, k=args.k)
 
