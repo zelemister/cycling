@@ -46,7 +46,10 @@ class load_dataset(Dataset):
             data.Label = data.Label.astype(int)
             label_list = data.Label.to_list()
             name_list = data.Name.to_list()
-
+        if resolution ==512:
+            corrupted_file = name_list.index("x_9010063.png")
+            del name_list[corrupted_file]
+            del label_list[corrupted_file]
         if self.task == "bikelane":
             # this should set all "2" to "1", such that rims count as bikelanes
             label_list = [min(1, label_list[i]) for i in range(len(label_list))]
