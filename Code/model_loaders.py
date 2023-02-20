@@ -54,23 +54,24 @@ class FilterModel(nn.Module):
                       )
 
     def forward(self, x):
-        x = self.model.conv1(x)
-        x = self.model.bn1(x)
-        x = self.model.relu(x)
-        x = self.model.maxpool(x)
+        with torch.no_grad():
+            x = self.model.conv1(x)
+            x = self.model.bn1(x)
+            x = self.model.relu(x)
+            x = self.model.maxpool(x)
 
-        x = self.model.layer1(x)
-        x = self.model.layer2(x)
-        x = self.model.layer3(x)
-        x = self.model.layer4(x)
+            x = self.model.layer1(x)
+            x = self.model.layer2(x)
+            x = self.model.layer3(x)
+            x = self.model.layer4(x)
 
-        x = self.model.avgpool(x)
-        x = torch.flatten(x, 1)
-        y = self.model.fc(x)
-        #convert model outputs into probabilities, transpose it such that the second row becomes the list of predicitons
-        #for class 2 then take the second row
-        y = y.softmax(1).t()[1]
-        mask = y < self.threshold
+            x = self.model.avgpool(x)
+            x = torch.flatten(x, 1)
+            y = self.model.fc(x)
+            #convert model outputs into probabilities, transpose it such that the second row becomes the list of predicitons
+            #for class 2 then take the second row
+            y = y.softmax(1).t()[1]
+            mask = y < self.threshold
         x = self.rim_layer(x)
         x[mask] = torch.tensor([[1, 0]], dtype=torch.float32, requires_grad=False)
         return x
