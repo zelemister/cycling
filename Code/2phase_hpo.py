@@ -8,7 +8,7 @@ def test_train(config, seed: int=0):
     payload = {"min_epochs": 100, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": "all", "task": "one_shot",
                "model": "resnet34", "pretrained": True, "params": "full", "weights": 1,
-               "optimizer": config["optimizer"], "lr": config["lr"], "stages": 1, "results_folder": "../Results/smac_runs/2Phase_Rims_2",
+               "optimizer": config["optimizer"], "lr": config["lr"], "stages": 1, "results_folder": "../Results/smac_runs/2Phase_Rims",
                "logging": True, "quantile":config["quantile"], "save_model":False}
 
     # define the evaluation metric as return
@@ -25,6 +25,6 @@ configspace.add_hyperparameter(lr)
 configspace.add_hyperparameter(quantile)
 
 
-scenario = Scenario(configspace, deterministic=True, n_trials=200, output_directory=Path("../Results/smac3_output/2_Phase_2"))
+scenario = Scenario(configspace, deterministic=True, n_trials=200, output_directory=Path("../Results/smac3_output/2_Phase"))
 smac = HyperparameterOptimizationFacade(scenario, test_train)
 incumbent = smac.optimize()
