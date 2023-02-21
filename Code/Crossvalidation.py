@@ -119,10 +119,10 @@ def parse_payload(payload):
             batch_size = 32
         elif model_name == "transformer":
             batch_size = 16
+        else:
+            batch_size = 64
     elif resolution == 512:
         batch_size = 16
-    else:
-        batch_size = 64
 
     return generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience
 
