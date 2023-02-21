@@ -130,19 +130,35 @@ def save_results(history, folder, logging=True):
             temp = pd.DataFrame(history["training_progress"][i])
             temp.to_csv(os.path.join(folder, f"fold_{i + 1}.csv"))
 
-def get_prediction_list(model, loader, device):
+def get_prediction_list(model, trainloader, testloader, device, folder, fold):
     pred_list=[]
     label_list=[]
-    for data in loader:
+    for data in trainloader:
         images = data["Image"]
         labels = data["Label"]
         images, labels = images.to(device), labels.to(device)
-        output = model(images)
+        with torch.no_grad():
+            output = model(images)
         #predicted score for class 1
         predictions = output.softmax(1).t()[1]
         pred_list += predictions.tolist()
         label_list +=labels.tolist()
-    return pd.DataFrame({"label": label_list, "prediction":pred_list})
+    train_preds = pd.DataFrame({"label": label_list, "prediction":pred_list})
+    train_preds.to_csv(folder.joinpath(f"predictions_{fold}.csv"))
+    pred_list=[]
+    label_list=[]
+    for data in testloader:
+        images = data["Image"]
+        labels = data["Label"]
+        images, labels = images.to(device), labels.to(device)
+        with torch.no_grad():
+            output = model(images)
+        #predicted score for class 1
+        predictions = output.softmax(1).t()[1]
+        pred_list += predictions.tolist()
+        label_list +=labels.tolist()
+    val_preds = pd.DataFrame({"label": label_list, "prediction":pred_list})
+    val_preds.to_csv(folder.joinpath(f"val_predictions_{fold}.csv"))
 
 def cross_validation(payload, seed=0, k=5):
     seed = seed
@@ -211,8 +227,9 @@ def cross_validation(payload, seed=0, k=5):
         history["training_progress"].append(training_progress)
         if payload["save_model"]:
             torch.save(best_model.state_dict(), os.path.join(results_folder, f"model_{fold}.pt"))
-            predictions = get_prediction_list(best_model, train_loader, device=device)
-            predictions.to_csv(results_folder.joinpath(f"predictions_{fold}.csv"))
+            predictions = get_prediction_list(best_model, train_loader, test_loader,
+                                              device=device, folder=results_folder, fold=fold)
+
         if k==1:
             save_results(history, results_folder, payload["logging"])
             auc = np.mean(history["Test_AUC"])
