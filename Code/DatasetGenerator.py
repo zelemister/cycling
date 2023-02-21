@@ -27,10 +27,10 @@ class load_dataset(Dataset):
         self.task = task
         self.model_name = model_name
 
-        if "resnet" in model_name:
-            self.resolution = resolution
-        elif model_name == "transformer":
+        if model_name == "transformer":
             self.resolution = 224
+        else:
+            self.resolution=resolution
         if os.path.exists("../Images" + "_" + str(resolution) + "/" + phase):
             self.image_folder = "../Images" + "_" + str(resolution) + "/" + phase
         else: self.image_folder="../Images_" + str(resolution)
