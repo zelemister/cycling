@@ -148,13 +148,13 @@ def get_prediction_list(model, trainloader, testloader, device, folder, fold):
         predictions = output.softmax(1).t()[1]
         pred_list += predictions.tolist()
         label_list +=labels.tolist()
-        name_list +=names.tolist()
+        name_list +=names
 
     train_preds = pd.DataFrame({"label": label_list, "prediction":pred_list, "name":name_list})
     train_preds.to_csv(folder.joinpath(f"predictions_{fold}.csv"))
     pred_list=[]
     label_list=[]
-    names = data["Name"]
+    name_list=[]
 
     for data in testloader:
         images = data["Image"]
@@ -168,7 +168,7 @@ def get_prediction_list(model, trainloader, testloader, device, folder, fold):
         predictions = output.softmax(1).t()[1]
         pred_list += predictions.tolist()
         label_list +=labels.tolist()
-        name_list +=names.tolist()
+        name_list +=names
 
     val_preds = pd.DataFrame({"label": label_list, "prediction":pred_list, "name":name_list})
     val_preds.to_csv(folder.joinpath(f"val_predictions_{fold}.csv"))
