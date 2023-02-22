@@ -135,9 +135,12 @@ def save_results(history, folder, logging=True):
 def get_prediction_list(model, trainloader, testloader, device, folder, fold):
     pred_list=[]
     label_list=[]
+    name_list=[]
     for data in trainloader:
         images = data["Image"]
         labels = data["Label"]
+        names = data["Name"]
+
         images, labels = images.to(device), labels.to(device)
         with torch.no_grad():
             output = model(images)
@@ -145,13 +148,19 @@ def get_prediction_list(model, trainloader, testloader, device, folder, fold):
         predictions = output.softmax(1).t()[1]
         pred_list += predictions.tolist()
         label_list +=labels.tolist()
-    train_preds = pd.DataFrame({"label": label_list, "prediction":pred_list})
+        name_list +=names.tolist()
+
+    train_preds = pd.DataFrame({"label": label_list, "prediction":pred_list, "name":name_list})
     train_preds.to_csv(folder.joinpath(f"predictions_{fold}.csv"))
     pred_list=[]
     label_list=[]
+    names = data["Name"]
+
     for data in testloader:
         images = data["Image"]
         labels = data["Label"]
+        names = data["Name"]
+
         images, labels = images.to(device), labels.to(device)
         with torch.no_grad():
             output = model(images)
@@ -159,7 +168,9 @@ def get_prediction_list(model, trainloader, testloader, device, folder, fold):
         predictions = output.softmax(1).t()[1]
         pred_list += predictions.tolist()
         label_list +=labels.tolist()
-    val_preds = pd.DataFrame({"label": label_list, "prediction":pred_list})
+        name_list +=names.tolist()
+
+    val_preds = pd.DataFrame({"label": label_list, "prediction":pred_list, "name":name_list})
     val_preds.to_csv(folder.joinpath(f"val_predictions_{fold}.csv"))
 
 def cross_validation(payload, seed=0, k=5):
