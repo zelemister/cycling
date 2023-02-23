@@ -285,8 +285,8 @@ if __name__ == "__main__":
     #arguments for 2 phase model
     parser.add_argument('--stages', type=int, default=1)
     parser.add_argument('--quantile', type=float, default=0.9)
-    parser.add_argument('--bikephasepath', type=str, default="../Results/Bikelane_tunedFor2Phase/Config_1")
-
+    parser.add_argument('--bikephasepath', type=str, default="Bikelane_tunedFor2Phase/")
+    bikephasepath = os.path.join("../Results/", parser.bikephasepath, "/Config_1")
     args = parser.parse_args()
 
     # get the folder, where to save results to
@@ -312,7 +312,7 @@ if __name__ == "__main__":
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True,
-               "save_model":args.save_model, "quantile":args.quantile, "bikephasepath":args.bikephasepath}
+               "save_model":args.save_model, "quantile":args.quantile, "bikephasepath":bikephasepath}
 
     auc, loss, acc = cross_validation(payload, k=args.k)
 
