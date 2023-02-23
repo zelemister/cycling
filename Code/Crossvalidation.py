@@ -286,8 +286,8 @@ if __name__ == "__main__":
     parser.add_argument('--stages', type=int, default=1)
     parser.add_argument('--quantile', type=float, default=0.9)
     parser.add_argument('--bikephasepath', type=str, default="Bikelane_tunedFor2Phase/")
-    bikephasepath = os.path.join("../Results/", parser.bikephasepath, "/Config_1")
     args = parser.parse_args()
+    bikephasepath = os.path.join("../Results/", args.bikephasepath, "/Config_1")
 
     # get the folder, where to save results to
     folder = "../Results/" + args.name
