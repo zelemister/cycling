@@ -17,7 +17,8 @@ import random
 from pathlib import Path
 
 class Model_Optim_Gen:
-    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full", lr=0.001, stages=1, quantile=0.9):
+    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full",
+                 lr=0.001, stages=1, quantile=0.9, bikephasepath=""):
         self.device = device
         self.model_name = model_name
         self.pretrained = pretrained
@@ -28,7 +29,7 @@ class Model_Optim_Gen:
         self.num_classes = 2
         self.k = 1
         self.quantile = quantile
-        self.path = Path("../Results/Bikelane_tunedFor2Phase/Config_1/")
+        self.path = Path(bikephasepath)
     def new_model(self):
         if self.stages ==1:
             model = get_model(self.model_name, pretrained=self.pretrained)
@@ -77,9 +78,14 @@ def parse_payload(payload):
     optimizer_fn = optimizer_keys[payload["optimizer"]]
     lr = payload["lr"]
     results_folder = payload["results_folder"]
+
+    #for 2 phase model
     stages = payload["stages"]
     quantile = payload["quantile"]
+    bikephasepath = payload["bikephasepath"]
+
     path = Path(results_folder)
+
     if not path.exists():
         path.mkdir(parents=True)
     i=1
@@ -101,7 +107,7 @@ def parse_payload(payload):
         device = torch.device("cpu")
 
     generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params,
-                                lr=lr, stages=stages, quantile=quantile)
+                                lr=lr, stages=stages, quantile=quantile, bikephasepath=bikephasepath)
 
     # get weights
     weights = torch.FloatTensor(weights)
@@ -273,10 +279,13 @@ if __name__ == "__main__":
     parser.add_argument('--weights', type=int, default=1)
     parser.add_argument('--optimizer', choices=["RMSProp", "SGD", "Adam"], default="RMSProp")
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--stages', type=int, default=1)
     parser.add_argument('--k', type=int, default=5) #if k==1, then the model is trained instead
     parser.add_argument('--save_model', type=bool, default=False)
+
+    #arguments for 2 phase model
+    parser.add_argument('--stages', type=int, default=1)
     parser.add_argument('--quantile', type=float, default=0.9)
+    parser.add_argument('--bikephasepath', type=str, default="../Results/Bikelane_tunedFor2Phase/Config_1")
 
     args = parser.parse_args()
 
@@ -303,7 +312,7 @@ if __name__ == "__main__":
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True,
-               "save_model":args.save_model, "quantile":args.quantile}
+               "save_model":args.save_model, "quantile":args.quantile, "bikephasepath":args.bikephasepath}
 
     auc, loss, acc = cross_validation(payload, k=args.k)
 

@@ -78,6 +78,9 @@ class FilterModel(nn.Module):
 
     def get_trainable_params(self):
         self.rim_layer.parameters()
+    def state_dict(self):
+        return self.rim_layer.state_dict()
+
 
 class Net256 (nn.Module):
     def __init__(self):
