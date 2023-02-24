@@ -80,11 +80,12 @@ for i in range(1,6):
         img = Image.open(file_path.joinpath(name))
         img = transformation(img)
         img = img.unsqueeze(0)
+        img.to(device)
         with torch.no_grad():
             out = model(img)
         one_pred = torch.softmax(out, 1)[0][1]
         unlabeled_names += [name]
-        unlabeled_preds += [one_pred]
+        unlabeled_preds += [one_pred.item()]
 
     predictions = pd.DataFrame({"Name": unlabeled_names, "Prediction": unlabeled_preds})
     predictions = predictions.sort_values(by='Prediction', ascending=False)
