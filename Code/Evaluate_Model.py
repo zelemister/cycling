@@ -10,45 +10,73 @@ import numpy as np
 from PIL import Image
 #model_path = Path("../Results/RIM_Oneshot_Tuned61/Config_1/trained_model.pt")
 resolution=256
-model_path = Path("../Results/Bikelane_tunedFor2Phase/Config_1/model_1.pt")
+folder = Path("../Results/RIM_Oneshot_Tuned61_CV_2/Config_1/")
 data = pd.read_csv("../labels_complete.csv")
 unlabeled_data=data[np.isnan(data["Label"])]
 transformation = get_transformer("rotations", 256)
-data_payload = {"task": "bikelane", "phase": "test", "set": "train", "transform": transformation,
+data_payload = {"task": "one_shot", "phase": "test", "set": "train", "transform": transformation,
                 "oversamplingrate": 43, "split": 0, "resolution": resolution,
                 "model_name": "resnet"}
 #model = get_model("resnet18")
-model = get_model("resnet34")
+model = get_model("resnet18")
 file_path = Path(f"../Images_{str(resolution)}")
 
 
-model.eval()
 loss_fn = torch.nn.CrossEntropyLoss(reduction="mean")
 val_set = load_dataset(**data_payload)
 val_set.set = "val"
-val_loader = torch.utils.data.DataLoader(val_set, batch_size=12, shuffle=False)
+val_loader = torch.utils.data.DataLoader(val_set, batch_size=64, shuffle=False)
 if torch.cuda.is_available():
     device = torch.device("cuda")
 else: device = torch.device("cpu")
-model.load_state_dict(torch.load(model_path, map_location=device))
 
-val_loss, val_auc, val_acc, labels_list, preds_list, names_list = val_epoch(model, test_loader=val_loader,
+loss_list = []
+auc_list = []
+acc_list =[]
+_95_quant_list = []
+_95_threshold = []
+_975_quant_list = []
+_975_threshold = []
+_100_quant_list = []
+_100_threshold = []
+
+for i in range(1,6):
+    model_path = folder.joinpath(f"model_{i}.pt")
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.eval()
+
+    val_loss, val_auc, val_acc, labels_list, preds_list, names_list = val_epoch(model, test_loader=val_loader,
                                                                             loss_fn=loss_fn, device=device,
                                                                             return_lists=True)
-print(round(val_loss,3))
-print(round(val_auc,3))
-print(round(val_acc,3))
-frame = pd.DataFrame({"Name":names_list, "Label":labels_list, "Prediction":preds_list})
-frame.Prediction = [x.item() for x in frame.Prediction]
-frame.Label = [x.item() for x in frame.Label]
-sorted_frame = frame.sort_values(by='Prediction', ascending=False)
-sorted_frame = sorted_frame.reset_index()
-print(frame)
+    loss_list += [val_loss]
+    auc_list += [val_auc]
+    acc_list += [val_acc]
 
-indices = [i for i in range(len(sorted_frame)) if sorted_frame.Label[i] == 1]
-print(sorted_frame.head(max(indices) + 1).Label.value_counts())
+    #print(round(val_loss,3))
+    #print(round(val_auc,3))
+    #print(round(val_acc,3))
+    frame = pd.DataFrame({"Name":names_list, "Label":labels_list, "Prediction":preds_list})
+    frame.Prediction = [x.item() for x in frame.Prediction]
+    frame.Label = [x.item() for x in frame.Label]
+    frame.to_csv(folder.joinpath(f"generalization_predictions_{i}.csv"))
 
+    sorted_frame = frame.sort_values(by='Prediction', ascending=False)
+    sorted_frame = sorted_frame.reset_index()
+    #print(frame)
+    #sorted_frame.to_csv(folder.joinpath("Test_Evaluation.csv"))
 
+    indices = [i for i in range(len(sorted_frame)) if sorted_frame.Label[i] == 1]
+    quantiles = np.quantile(indices, [0.95, 0.975, 1])
+    _95_quant_list += [quantiles[0] / len(sorted_frame)]
+    _95_threshold += [sorted_frame[indices(round(quantiles[0]))].Prediction]
+    _975_quant_list += [quantiles[1] / len(sorted_frame)]
+    _100_quant_list += [quantiles[2] / len(sorted_frame)]
+
+#print(sorted_frame.head(max(indices) + 1).Label.value_counts())
+
+test_evaluation_metrics = pd.DataFrame({"Loss": loss_list, "AUC": auc_list, "ACC": acc_list, "95%":_95_quant_list,
+                                        "97.5%":_975_quant_list, "100%":_100_quant_list})
+test_evaluation_metrics.to_csv(folder.joinpath("test_metrics.csv"))
 
 """#predict on unlabeled data
 transformation = get_transformer("normalize", resolution=resolution)
