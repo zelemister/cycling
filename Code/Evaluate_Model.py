@@ -10,8 +10,8 @@ import numpy as np
 from PIL import Image
 #model_path = Path("../Results/RIM_Oneshot_Tuned61/Config_1/trained_model.pt")
 resolution=256
-folder = Path("../Results/RIM_Oneshot_Tuned61_CV_2/Config_1/")
-output_folder = Path("../Results/RIM_Oneshot_Tuned61_CV_2/")
+output_folder = Path("../Results/RIM_Oneshot_Tuned61_Weight100/")
+folder = output_folder.join("/Config_1/")
 data = pd.read_csv("../labels_complete.csv")
 unlabeled_data=data[np.isnan(data["Label"])]
 transformation = get_transformer("rotations", 256)
