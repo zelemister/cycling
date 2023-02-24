@@ -11,6 +11,7 @@ from PIL import Image
 #model_path = Path("../Results/RIM_Oneshot_Tuned61/Config_1/trained_model.pt")
 resolution=256
 folder = Path("../Results/RIM_Oneshot_Tuned61_CV_2/Config_1/")
+output_folder = Path("../Results/RIM_Oneshot_Tuned61_CV_2/")
 data = pd.read_csv("../labels_complete.csv")
 unlabeled_data=data[np.isnan(data["Label"])]
 transformation = get_transformer("rotations", 256)
@@ -52,18 +53,13 @@ for i in range(1,6):
     auc_list += [val_auc]
     acc_list += [val_acc]
 
-    #print(round(val_loss,3))
-    #print(round(val_auc,3))
-    #print(round(val_acc,3))
     frame = pd.DataFrame({"Name":names_list, "Label":labels_list, "Prediction":preds_list})
     frame.Prediction = [x.item() for x in frame.Prediction]
     frame.Label = [x.item() for x in frame.Label]
-    frame.to_csv(folder.joinpath(f"generalization_predictions_{i}.csv"))
+    frame.to_csv(output_folder.joinpath(f"generalization_predictions_{i}.csv"))
 
     sorted_frame = frame.sort_values(by='Prediction', ascending=False)
     sorted_frame = sorted_frame.reset_index()
-    #print(frame)
-    #sorted_frame.to_csv(folder.joinpath("Test_Evaluation.csv"))
 
     indices = [i for i in range(len(sorted_frame)) if sorted_frame.Label[i] == 1]
     quantiles = np.quantile(indices, [0.95, 0.975, 1])
@@ -72,27 +68,26 @@ for i in range(1,6):
     _975_quant_list += [quantiles[1] / len(sorted_frame)]
     _100_quant_list += [quantiles[2] / len(sorted_frame)]
 
-#print(sorted_frame.head(max(indices) + 1).Label.value_counts())
+    # predict on unlabeled data
+    transformation = get_transformer("normalize", resolution=resolution)
+    unlabeled_names = []
+    unlabeled_preds = []
+    for name in unlabeled_data["Name"]:
+        img = Image.open(file_path.joinpath(name))
+        img = transformation(img)
+        img = img.unsqueeze(0)
+        with torch.no_grad():
+            out = model(img)
+        one_pred = torch.softmax(out, 1)[0][1]
+        unlabeled_names += [name]
+        unlabeled_preds += [one_pred]
+
+    predictions = pd.DataFrame({"Name": unlabeled_names, "Prediction": unlabeled_preds})
+    predictions = predictions.sort_values(by='Prediction', ascending=False)
+    predictions.to_csv(output_folder.joinpath(f"unlabeled_predictions_{i}"))
+
 
 test_evaluation_metrics = pd.DataFrame({"Loss": loss_list, "AUC": auc_list, "ACC": acc_list, "95%":_95_quant_list,
                                         "97.5%":_975_quant_list, "100%":_100_quant_list})
-test_evaluation_metrics.to_csv(folder.joinpath("test_metrics.csv"))
+test_evaluation_metrics.to_csv(output_folder.joinpath("test_metrics.csv"))
 
-"""#predict on unlabeled data
-transformation = get_transformer("normalize", resolution=resolution)
-unlabeled_names = []
-unlabeled_preds = []
-for name in unlabeled_data["Name"]:
-    img = Image.open(file_path.joinpath(name))
-    img = transformation(img)
-    img = img.unsqueeze(0)
-    with torch.no_grad():
-        out = model(img)
-    one_pred = torch.softmax(out, 1)[0][1]
-    unlabeled_names += [name]
-    unlabeled_preds += [one_pred]
-
-predictions = pd.DataFrame({"Name":unlabeled_names, "Prediction":unlabeled_preds})
-predictions = predictions.sort_values(by='Prediction', ascending=False)
-print(predictions)
-"""
