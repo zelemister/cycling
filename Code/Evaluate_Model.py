@@ -80,7 +80,7 @@ for i in range(1,6):
         img = Image.open(file_path.joinpath(name))
         img = transformation(img)
         img = img.unsqueeze(0)
-        img.to(device)
+        img = img.to(device)
         with torch.no_grad():
             out = model(img)
         one_pred = torch.softmax(out, 1)[0][1]
