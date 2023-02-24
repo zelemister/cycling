@@ -65,12 +65,12 @@ for i in range(1,6):
     indices = [i for i in range(len(sorted_frame)) if sorted_frame.Label[i] == 1]
     quantiles = np.quantile(indices, [0.95, 0.975, 1])
     _95_quant_list += [quantiles[0] / len(sorted_frame)]
-    _95_threshold += [sorted_frame.loc[indices(round(quantiles[0]))].Prediction]
+    _95_threshold += [sorted_frame.loc[round(quantiles[0])].Prediction]
     _975_quant_list += [quantiles[1] / len(sorted_frame)]
-    _975_threshold += [sorted_frame.loc[indices(round(quantiles[0]))].Prediction]
+    _975_threshold += [sorted_frame.loc[round(quantiles[1])].Prediction]
 
     _100_quant_list += [quantiles[2] / len(sorted_frame)]
-    _100_threshold += [sorted_frame.loc[indices(round(quantiles[0]))].Prediction]
+    _100_threshold += [sorted_frame.loc[round(quantiles[2])].Prediction]
 
     # predict on unlabeled data
     transformation = get_transformer("normalize", resolution=resolution)
