@@ -44,6 +44,7 @@ _100_threshold = []
 for i in range(1,6):
     model_path = folder.joinpath(f"model_{i}.pt")
     model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
     model.eval()
 
     val_loss, val_auc, val_acc, labels_list, preds_list, names_list = val_epoch(model, test_loader=val_loader,
