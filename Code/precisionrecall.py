@@ -24,11 +24,13 @@ plt.ylabel("Precision")
 plt.title("Precision-Recall Curve")
 plt.show()
 
+'choosing a threshold that maximizes f1'
 f1_scores = 2 * (precision * recall) / (precision + recall)
 best_threshold_idx = np.argmax(f1_scores)
 best_threshold = thresholds[best_threshold_idx]
 print(best_threshold)
 
+'choosing a threshold that has precision 1 and maximizes recall'
 precision_threshold = None
 for i in range(len(thresholds)):
     if precision[i] == 1.0 and (precision_threshold is None or recall[i] > recall[precision_threshold]):
