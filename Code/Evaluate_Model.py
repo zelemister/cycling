@@ -65,9 +65,12 @@ for i in range(1,6):
     indices = [i for i in range(len(sorted_frame)) if sorted_frame.Label[i] == 1]
     quantiles = np.quantile(indices, [0.95, 0.975, 1])
     _95_quant_list += [quantiles[0] / len(sorted_frame)]
-    _95_threshold += [sorted_frame[indices(round(quantiles[0]))].Prediction]
+    _95_threshold += [sorted_frame.loc[indices(round(quantiles[0]))].Prediction]
     _975_quant_list += [quantiles[1] / len(sorted_frame)]
+    _975_threshold += [sorted_frame.loc[indices(round(quantiles[0]))].Prediction]
+
     _100_quant_list += [quantiles[2] / len(sorted_frame)]
+    _100_threshold += [sorted_frame.loc[indices(round(quantiles[0]))].Prediction]
 
     # predict on unlabeled data
     transformation = get_transformer("normalize", resolution=resolution)
@@ -89,6 +92,9 @@ for i in range(1,6):
 
 
 test_evaluation_metrics = pd.DataFrame({"Loss": loss_list, "AUC": auc_list, "ACC": acc_list, "95%":_95_quant_list,
-                                        "97.5%":_975_quant_list, "100%":_100_quant_list})
+                                        "97.5%":_975_quant_list, "100%":_100_quant_list,
+                                        "95_threshold":_95_threshold,
+                                        "975_threshold":_975_threshold,
+                                        "100_threshold":_100_threshold})
 test_evaluation_metrics.to_csv(output_folder.joinpath("test_metrics.csv"))
 
