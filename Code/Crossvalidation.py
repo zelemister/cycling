@@ -78,7 +78,7 @@ def parse_payload(payload):
     optimizer_fn = optimizer_keys[payload["optimizer"]]
     lr = payload["lr"]
     results_folder = payload["results_folder"]
-
+    phase = payload["phase"]
     #for 2 phase model
     stages = payload["stages"]
     quantile = payload["quantile"]
@@ -96,7 +96,7 @@ def parse_payload(payload):
 
 
     # get dataset
-    data_payload = {"task": task, "phase": "train", "set": "train", "transform": transformation,
+    data_payload = {"task": task, "phase": phase, "set": "train", "transform": transformation,
                     "oversamplingrate": oversampling_rate, "split": 0, "resolution": resolution,
                     "model_name": model_name}
     data = load_dataset(**data_payload)
@@ -281,6 +281,7 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--k', type=int, default=5) #if k==1, then the model is trained instead
     parser.add_argument('--save_model', type=bool, default=False)
+    parser.add_argument('--phase', choices=["train", "test", "complete_data"], default="train")
 
     #arguments for 2 phase model
     parser.add_argument('--stages', type=int, default=1)
@@ -312,7 +313,7 @@ if __name__ == "__main__":
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
                "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True,
-               "save_model":args.save_model, "quantile":args.quantile, "bikephasepath":bikephasepath}
+               "save_model":args.save_model, "quantile":args.quantile, "bikephasepath":bikephasepath, "phase":args.phase}
 
     auc, loss, acc = cross_validation(payload, k=args.k)
 
