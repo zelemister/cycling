@@ -30,7 +30,7 @@ from model_loaders import get_model
 """
 torch.hub.download_url_to_file(
     'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/2006_09_06_180_Leuchtturm.jpg/640px-2006_09_06_181_Leuchtturm.jpg',
-    '../Example Images/dornbusch-lighthouse.jpg',
+    '../Example Images_256/dornbusch-lighthouse.jpg',
 )
 Testbild Leuchtturm. Beispiel RIM: x_18030025
 """
@@ -61,10 +61,23 @@ transform = Compose([
 
 # load the image
 testimage = Image.open('../Example Images/dornbusch-lighthouse.jpg')
-# # image = Image.open('../Example Images/x_18040012.png')
-# image = Image.open('../Images/x_18030025.png')
-image = Image.open('../Images/x_23040044.png')
-# image = Image.open('../Images/x_77030014.png')
+# # image = Image.open('../Example Images_256/x_18040012.png')
+# image = Image.open('../Images_256/x_18030025.png')
+#image = Image.open('../Images_256/x_23040044.png')
+#image = Image.open('../Images_256/x_28040048.png') #rim
+# image = Image.open('../Images_256/x_77030014.png')
+#image = Image.open('../Images_256/x_23010112.png') #misslabelled
+#image = Image.open('../Images_256/x_24010092.png') #ideal image
+#image = Image.open('../Images_256/x_22010049.png')
+#image = Image.open('../Images_256/x_39020075.png') #worst image
+#image = Image.open('../Images_256/x_3030077.png') #medium
+#image = Image.open('../Images_256/x_55010007.png') #0.01
+#image = Image.open('../Images_256/x_27020025.png') #white 0.2
+#image = Image.open('../Example Images/Example_Bikelane_Test_Set.png')
+#image = Image.open('../Images_256/x_26010150.png') #1
+image = Image.open('../Images_256/x_18030037.png')# dual rim bike
+#image = Image.open('../Images_256/x_21040041.png')
+#image = Image.open('../Images_256/x_18030030.png')
 """"
 0,x_18020087_1.png
 1,x_23040044_1.png
@@ -85,8 +98,12 @@ data = transform(image)[None]
 # load the model and set it to evaluation mode
 # model = resnet18(weights=None).eval()
 # model = resnet18().eval()
-model = get_model("resnet", pretrained=False)
-model.load_state_dict(torch.load("../Models" + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
+model = get_model("resnet18", pretrained=False) #18 for rim and 34 for bike model
+#model.load_state_dict(torch.load("../Models" + "/fine_tuned_best_model.pt", map_location=torch.device('cpu')))
+#model.load_state_dict(torch.load("../Models" + "/model_4.pt", map_location=torch.device('cpu'))) #rim
+#model.load_state_dict(torch.load("../Models" + "/Bike" +"/trained_model.pt", map_location=torch.device('cpu')))
+#model.load_state_dict(torch.load("../Models" + "/Bike" +"/model_1.pt", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("../Models" + "/model_1.pt", map_location=torch.device('cpu'))) #rim weights 100
 model = model.eval()
 
 # use the ResNet-specific canonizer
@@ -119,7 +136,7 @@ img = imgify(relevance, symmetric=True, cmap='coldnhot')
 # show the image
 # display(transform_img(img)) #diplay seems to be a jupyter notebook function
 img.show()
-
+#img.save('lrp_x_18030037.png')
 
 
 def explainme(pil_image: Image, resolution=256, model_name="resnet",
@@ -170,3 +187,4 @@ def explainme(pil_image: Image, resolution=256, model_name="resnet",
         return img
 
 #explainme(testimage).show()
+
