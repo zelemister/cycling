@@ -13,11 +13,17 @@ import numpy as np
 
 class load_dataset(Dataset):
     def __init__(self, task: str, phase: str, set: str, transform: transforms, oversamplingrate: float, split: float,
-                 resolution=256, model_name="resnet34", one_overoversampling=1):
+                 resolution=256, model_name="resnet34"):
         """
-        :param task: string; either "bikelane", "rim", or "one_shot", "full_data"
-        :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split of the images, maybe
-        :param set: either "train" or "val"
+        :param task: string; either "bikelane", "rim", or "one_shot", "full_data" with the following explanations:
+                            bikelane: all bikelanes and rims are set to 1, we want to identify cycling infrastructure
+                            rim: never used, but it set all rims to 1 and all bikelanes to 0 leading to a smaller dataset
+                            one_shot: sets all rim to 1 all non rims to 0, working with the full dataset
+                            full_data: never used, keeps all labels as they are, leading to 3 total classes
+        :param phase: string; either "train" or "test", this does not mean the training split, but the 9000/3000 split
+                            of the images, this was relevant for our work, for subsequent projects it's not important
+        :param set: string; either 'train' or 'val', depending on the 'split' it uses only a subset of the data, and
+                            depending on the
         :param transform: transformationfunction
         """
         self.set = set
@@ -54,8 +60,10 @@ class load_dataset(Dataset):
             # this should set all "2" to "1", such that rims count as bikelanes
             label_list = [min(1, label_list[i]) for i in range(len(label_list))]
             self.dataset = pd.DataFrame({"Name": name_list, "Label": label_list})
+
         elif self.task == "rim":
             """
+            This setting is not used, as it was deemed too complicated
             We select all indizes that are equal to 1 or 2 (bikelanes or rims) which what we are interested in in task 2
             Then we get the sublist which only contains the labels of those images
             Then we subtract 1 from those labels, such that our task is differing 0 and 1
@@ -82,14 +90,6 @@ class load_dataset(Dataset):
             sample = self.dataset.sample(frac=max(split, 1 - split), random_state=42)
             self.dataset = self.dataset[~self.dataset.index.isin(sample.index)]
 
-        if one_overoversampling>1 and isinstance(one_overoversampling, int) and set == "train":
-            ones = self.dataset[self.dataset["Label"]==1]
-            data_list = [self.dataset]
-            while one_overoversampling > 1:
-                data_list.append(ones)
-                one_overoversampling -= 1
-            self.dataset = pd.concat(data_list)
-
         self.dataset = self.dataset.reset_index(drop=True)
 
     def __getitem__(self, item):
@@ -100,7 +100,7 @@ class load_dataset(Dataset):
         label = self.dataset.loc[item].Label
 
         if self.set == "train":
-            if random.random() < 1 - (1 / self.rate):
+            if random.random() < self.rate:
                 if self.transform:
                     image = self.transform(image)
 
@@ -116,11 +116,11 @@ class load_dataset(Dataset):
 if __name__=="__main__":
     random.seed(123456)
     data = load_dataset(task="one_shot", phase="train", set="train", transform=get_transformer("rotations"),
-                         oversamplingrate=2, split=0)
+                         oversamplingrate=0.5, split=0)
     #data2 = load_dataset(task="rim", phase="train", set="train", transform=get_transformer("rotations"),
     #                     oversamplingrate=2, split=0)
     data2 = load_dataset(task="one_shot", phase="complete_data", set="train", transform=get_transformer("rotations"),
-                         oversamplingrate=2, split=0)
+                         oversamplingrate=0.5, split=0)
 
     dset_loader = DataLoader(data, batch_size=10, shuffle=False)
 

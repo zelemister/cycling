@@ -17,11 +17,25 @@ import random
 from pathlib import Path
 
 class Model_Optim_Gen:
-    def __init__(self, device, optimizer_fn, model_name="resnet34", pretrained=True, params="full",
+    """
+    This class generates a new model to be trained and a new optimizing function to train the model. This is necessary
+    since each fold have to start completely fresh.
+    """
+
+    def __init__(self, device, optimizer_fn, model_name="resnet34", params="full",
                  lr=0.001, stages=1, quantile=0.9, bikephasepath=""):
+        """
+        :param device: torch.device
+        :param optimizer_fn: torch.optim function
+        :param model_name: name of model to be generated, see model_loaders.py for the different options
+        :param params:
+        :param lr:
+        :param stages:
+        :param quantile:
+        :param bikephasepath:
+        """
         self.device = device
         self.model_name = model_name
-        self.pretrained = pretrained
         self.optimizer_fn = optimizer_fn
         self.params = params
         self.lr = lr
@@ -32,7 +46,7 @@ class Model_Optim_Gen:
         self.path = Path(bikephasepath)
     def new_model(self):
         if self.stages ==1:
-            model = get_model(self.model_name, pretrained=self.pretrained)
+            model = get_model(self.model_name)
             model.to(self.device)
         elif self.stages==2:
             temp_model = get_model(self.model_name)
@@ -72,7 +86,6 @@ def parse_payload(payload):
     transformation = get_transformer(payload["transformation"], resolution)
     task = payload["task"]
     model_name = payload["model"]
-    pretrained = payload["pretrained"]
     params = payload["params"]
     weights = [1, payload["weights"]]
     optimizer_fn = optimizer_keys[payload["optimizer"]]
@@ -106,7 +119,7 @@ def parse_payload(payload):
     else:
         device = torch.device("cpu")
 
-    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, pretrained=pretrained, params=params,
+    generator = Model_Optim_Gen(device, optimizer_fn, model_name=model_name, params=params,
                                 lr=lr, stages=stages, quantile=quantile, bikephasepath=bikephasepath)
 
     # get weights
@@ -274,7 +287,6 @@ if __name__ == "__main__":
     parser.add_argument('--transformation', choices=["rotations", "colorJitter", "gBlur", "all"], default="rotations")
     parser.add_argument('--task', type=str, default="bikelane")
     parser.add_argument('--model', type=str, default="resnet34")
-    parser.add_argument('--pretrained', type=bool, default=True)
     parser.add_argument('--params', choices=["full", "head"], default="full")
     parser.add_argument('--weights', type=int, default=1)
     parser.add_argument('--optimizer', choices=["RMSProp", "SGD", "Adam"], default="RMSProp")
@@ -305,13 +317,9 @@ if __name__ == "__main__":
         folder = folder_changed
         os.mkdir(folder)
 
-    # payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience, "oversampling_rate":args.oversampling_rate,
-    #            "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
-    #            "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
-    #            "optimizer": args.optimizer, "lr": args.lr, "stages": args.stages, "results_folder": folder}
     payload = {"min_epochs": args.min_epochs, "max_patience": args.max_patience, "oversampling_rate":args.oversampling_rate,
                "resolution": args.resolution, "transformation": args.transformation, "task": args.task,
-               "model": args.model, "pretrained": args.pretrained, "params": args.params, "weights": args.weights,
+               "model": args.model, "params": args.params, "weights": args.weights,
                "optimizer": args.optimizer, "lr": args.lr, "stages": 1, "results_folder": folder, "logging":True,
                "save_model":args.save_model, "quantile":args.quantile, "bikephasepath":bikephasepath, "phase":args.phase}
 

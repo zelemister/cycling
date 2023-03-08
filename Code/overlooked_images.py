@@ -1,4 +1,3 @@
-from config_file import *
 from model_loaders import get_model
 from torchvision import datasets, transforms
 from transformations import get_transformer
