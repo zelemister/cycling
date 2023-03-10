@@ -76,6 +76,15 @@ class Model_Optim_Gen:
 
 
 def parse_payload(payload):
+    """
+    This function interprets the various parameters that can be passed to cross_validation. It interprets all the inputs
+    and returns finished objects that the crossvalidation than can work on.
+    :param payload: dict with named contents
+    :return: Model_Optim_Gen object to create new models each fold, the complete dataset, the device the program should use
+    the loss function, the folder to save the results, the batch size, the minimun number of epochs and the number of epochs
+    to wait for further improvement (max_patience).
+    """
+    #parse the payload object
     optimizer_keys = {"RMSProp": optim.RMSprop,
                       "SGD": optim.SGD,
                       "Adam": optim.Adam}
@@ -99,6 +108,7 @@ def parse_payload(payload):
 
     path = Path(results_folder)
 
+    #create path, and for tuning, save the results in a numbered Config_{number} folder.
     if not path.exists():
         path.mkdir(parents=True)
     i=1
@@ -146,12 +156,30 @@ def parse_payload(payload):
     return generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience
 
 def save_results(history, folder, logging=True):
+    """
+    this function saves the log of the training progress for each fold,
+    :param history: a crossvalidation history dict object to be saved to disc
+    :param folder: target folder
+    :param logging: only save data, if that is desired, otherwise, do nothing
+    :return: nothing
+    """
     if logging:
         for i in range(len(history["training_progress"])):
             temp = pd.DataFrame(history["training_progress"][i])
             temp.to_csv(os.path.join(folder, f"fold_{i + 1}.csv"))
 
 def get_prediction_list(model, trainloader, testloader, device, folder, fold):
+    """
+    Saves the predictions of the model on both the validation set and the training set. This function is called once per
+    Fold.
+    :param model: the model used to generate prediction lists
+    :param trainloader: training data used to generate training predictions
+    :param testloader: validation data used to generate validation predictions
+    :param device: torch.device
+    :param folder: folder to save the predictions
+    :param fold: range from 1-5, to indicate the fold the predictions come from
+    :return: nothing
+    """
     pred_list=[]
     label_list=[]
     name_list=[]
@@ -193,6 +221,15 @@ def get_prediction_list(model, trainloader, testloader, device, folder, fold):
     val_preds.to_csv(folder.joinpath(f"val_predictions_{fold}.csv"))
 
 def cross_validation(payload, seed=0, k=5):
+    """
+    This function is the main function of this file. It receives a payload of settings, and based on those settings it
+    trains five models with different splits of the data.
+    :param payload: payload of Images
+    :param seed: seed for reproducibility
+    :param k: if set to 1, it stops after one fold, but doesn't do anything else
+    :return: loss, auc, acc, averaged across the five folds,
+    """
+    # set the seed
     seed = seed
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -200,25 +237,36 @@ def cross_validation(payload, seed=0, k=5):
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
+    # get the objects that are used in the cross validation from the payload
     generator, data, device, loss_fn, results_folder, batch_size, min_epochs, max_patience = parse_payload(
         payload)
+
+    # set get the dataset and make it so, that the validation set is not oversampled
     train_data = copy.deepcopy(data)
     test_data = copy.deepcopy(data)
     test_data.set = "val"
-    # create KFold Object
+
+    # create KFold Object, we are using Stratified Splits
     splits = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
     fold = 0
     history = {"Test_AUC": [], "Test_Loss": [], "Test_acc": [], "training_progress": []}
+
+    # CV-Loop, repeats five times
     for train_index, test_index in splits.split(X=data.dataset["Name"], y=data.dataset["Label"]):
         fold += 1
         print("-"*20, f"FOLD {fold}", "-"*20)
+
+        # subsample dataset, such that the data is split according to their fold
         train_subsampler = SubsetRandomSampler(train_index)
         test_subsampler = SubsetRandomSampler(test_index)
         train_loader = DataLoader(train_data, batch_size=batch_size, num_workers=12, sampler=train_subsampler)
         test_loader = DataLoader(test_data, batch_size=batch_size, num_workers=12, sampler=test_subsampler)
+
+        # initialize new model and optimizer object per fold
         model = generator.new_model()
         optimizer = generator.new_optim(model)
+
         training_progress = {"epoch": [], "train_loss": [], "train_auc": [], "train_acc": [], "val_loss": [],
                              "val_auc": [], "val_acc": []}
 
@@ -228,10 +276,16 @@ def cross_validation(payload, seed=0, k=5):
         corresponding_acc = 0
 
         patience_counter = 0
+
+        # training loop: this repeats until enough training has occurred
         while (patience_counter < max_patience or epoch <= min_epochs) and epoch <= 300:
             epoch += 1
+
+            # train model, and then validate model
             train_loss, train_auc, train_acc = train_epoch(model, train_loader, optimizer, loss_fn, device=device)
             val_loss, val_auc, val_acc = val_epoch(model, test_loader, loss_fn, device=device)
+
+            # track best loss and increase timer if no improvement was found
             if val_loss >= best_loss:
                 patience_counter += 1
             else:
@@ -239,9 +293,12 @@ def cross_validation(payload, seed=0, k=5):
                 corresponding_auc = val_auc
                 corresponding_acc = val_acc
                 patience_counter = 0
+                # if setting is set, save the model each fold as well, this has to be turned off during tuning, because
+                # too many large files are generated otherwise
                 if k==1 or payload["save_model"]:
                     best_model=copy.deepcopy(model)
 
+            # log results
             training_progress["epoch"].append(epoch)
             training_progress["train_loss"].append(train_loss)
             training_progress["train_auc"].append(train_auc)
@@ -253,6 +310,8 @@ def cross_validation(payload, seed=0, k=5):
 
         print("-" * 10)
         print(f"Fold: {fold}, AUC: {round(corresponding_auc, 3)}, Loss: {round(best_loss,3)}, ACC: {round(corresponding_acc,3)}")
+
+        # track results for each fold
         history["Test_AUC"].append(corresponding_auc)
         history["Test_Loss"].append(best_loss)
         history["Test_acc"].append(corresponding_acc)
@@ -278,6 +337,10 @@ def cross_validation(payload, seed=0, k=5):
 
 
 if __name__ == "__main__":
+
+    # This code only runs, if Crossvalidation.py is run directly. There are a couple of settings that are allowed to set
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', type=str, default="Default_Name")
     parser.add_argument('--min_epochs', type=int, default=70)
@@ -332,4 +395,3 @@ if __name__ == "__main__":
     print(auc, loss, acc)
     result = pd.DataFrame(payload, index=[0])
     result.to_csv(os.path.join(folder, "results.csv"))
-    #torch.save(model.state_dict(), os.path.join(folder, "trained_model.pt"))
