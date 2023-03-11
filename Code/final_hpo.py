@@ -74,7 +74,9 @@ if __name__ == "__main__":
         #the model and transformation have to be set, how to constants work in smac?
         #change the payload
     #set function time limit to 5 days
-    time_limit = 5 * 24 * 60 * 60
+    #time_limit = 5 * 24 * 60 * 60
+    time_limit = 60 * 60
+
     scenario = Scenario(configspace, deterministic=True, n_trials=200, trial_walltime_limit = time_limit,
                         output_directory=output_directory)
     smac = HyperparameterOptimizationFacade(scenario, test_config)
