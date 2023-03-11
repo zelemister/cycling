@@ -24,13 +24,16 @@ if __name__ == "__main__":
     if args.task == "bikelane":
         output_directory = Path("../Results/smac3_output/bikelane")
         results_directory = Path("../Results/smac_runs/bikelane")
-        configspace = ConfigurationSpace({"oversampling_rate":(0,1),
-                                  "transformation": ["rotations", "colorJitter", "gBlur", "all"],
+        configspace = ConfigurationSpace({"transformation": ["rotations", "colorJitter", "gBlur", "all"],
                                   "model": ["resnet34","resnet50", "resnet18"],
                                   "optimizer":["RMSProp", "Adam", "SGD"]
                                   })
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         configspace.add_hyperparameter(lr)
+
+        oversampling_rate = Float("oversampling_rate", (0,1), default=0.1)
+        configspace.add_hyperparameter(oversampling_rate)
+
         task = "bikelane"
         stages = 1
         bikephasepath = ""
@@ -39,14 +42,17 @@ if __name__ == "__main__":
         results_directory = Path("../Results/smac_runs/one_shot")
 
 
-        configspace = ConfigurationSpace({"oversampling_rate":(0,1),
-                                          "transformation": ["rotations", "colorJitter", "gBlur", "all"],
+        configspace = ConfigurationSpace({"transformation": ["rotations", "colorJitter", "gBlur", "all"],
                                           "model": ["resnet34", "resnet50", "resnet18"],
                                           "optimizer":["RMSProp", "Adam", "SGD"]
                                           })
 
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         configspace.add_hyperparameter(lr)
+
+        oversampling_rate = Float("oversampling_rate", (0,1), default=0.1)
+        configspace.add_hyperparameter(oversampling_rate)
+
         task = "one_shot"
         stages = 1
         bikephasepath = ""
@@ -56,13 +62,16 @@ if __name__ == "__main__":
         results_directory = Path("../Results/smac_runs/2_Phase")
 
 
-        configspace = ConfigurationSpace({"oversampling_rate":(0,1),
-                                          "optimizer":["RMSProp", "Adam", "SGD"],
+        configspace = ConfigurationSpace({"optimizer":["RMSProp", "Adam", "SGD"],
                                           "model":"resnet34",
                                           "transformation":["rotations"]
                                           })
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         quantile = Float("quantile", (0.3, 1), default= 0.9)
+
+        oversampling_rate = Float("oversampling_rate", (0,1), default=0.1)
+        configspace.add_hyperparameter(oversampling_rate)
+
         configspace.add_hyperparameter(lr)
         configspace.add_hyperparameter(quantile)
 
