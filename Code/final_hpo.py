@@ -10,7 +10,8 @@ def test_config(config, seed: int=0, save_model=False):
                "resolution": 256, "transformation": config["transformation"], "task": task,
                "model": config["model"], "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": stages, "results_folder": results_directory,
-               "logging": True, "quantile": config["quantile"], "save_model": save_model, "bikephasepath":bikephasepath}
+               "logging": True, "quantile": config["quantile"], "save_model": save_model, "bikephasepath":bikephasepath,
+               "phase":"train"}
 
     # define the evaluation metric as return
     _, loss, _ = cross_validation(payload, seed)
