@@ -81,6 +81,7 @@ class load_dataset(Dataset):
             label_list = [0 if x == 1 else x for x in label_list]
             label_list = [1 if x == 2 else x for x in label_list]
             self.dataset = pd.DataFrame({"Name": name_list, "Label": label_list})
+
         elif self.task == "full_data":
             self.dataset = pd.DataFrame({"Name": name_list, "Label": label_list})
 
