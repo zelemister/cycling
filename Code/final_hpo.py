@@ -44,7 +44,7 @@ if __name__ == "__main__":
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         configspace.add_hyperparameter(lr)
 
-        oversampling_rate = Float("oversampling_rate", (0, 1), log=True, default=0.9)
+        oversampling_rate = Float("oversampling_rate", (0, 1), default=0.9)
         configspace.add_hyperparameter(oversampling_rate)
 
         task = "bikelane"
@@ -61,7 +61,7 @@ if __name__ == "__main__":
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         configspace.add_hyperparameter(lr)
 
-        oversampling_rate = Float("oversampling_rate", (0, 1), log=True, default=0.9)
+        oversampling_rate = Float("oversampling_rate", (0, 1), default=0.9)
         configspace.add_hyperparameter(oversampling_rate)
 
         task = "one_shot"
@@ -74,7 +74,7 @@ if __name__ == "__main__":
                                           })
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         quantile = Float("quantile", (0.3, 1), default=0.9)
-        oversampling_rate = Float("oversampling_rate", (0, 1), log=True, default=0.9)
+        oversampling_rate = Float("oversampling_rate", default=0.9)
 
         configspace.add_hyperparameter(oversampling_rate)
         configspace.add_hyperparameter(lr)
