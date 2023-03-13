@@ -7,9 +7,11 @@ import argparse
 
 
 def test_config(config, seed: int = 0, save_model=False):
-    if "quantile" not in config.keys():
-        config["quantile"] = 0.9
-    elif "model" not in config.keys():
+    if "quantile" in config.keys():
+        quantile = config["quantile"]
+    else: quantile = 0.9
+
+    if "model" not in config.keys():
         config["model"] = "resnet34"
 
     payload = {"min_epochs": 100, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
@@ -17,7 +19,7 @@ def test_config(config, seed: int = 0, save_model=False):
                "model": config["model"], "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": stages,
                "results_folder": results_directory,
-               "logging": True, "quantile": config["quantile"], "save_model": save_model,
+               "logging": True, "quantile": quantile, "save_model": save_model,
                "bikephasepath": bikephasepath,
                "phase": "train"}
 
