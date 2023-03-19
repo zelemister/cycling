@@ -47,7 +47,6 @@ class Model_Optim_Gen:
     def new_model(self):
         if self.stages ==1:
             model = get_model(self.model_name)
-            model.to(self.device)
         elif self.stages==2:
             temp_model = get_model(self.model_name)
             temp_model.load_state_dict(torch.load(self.path.joinpath(f"model_{self.k}.pt"),
@@ -59,6 +58,7 @@ class Model_Optim_Gen:
             threshold = predictions.prediction[round(threshold_index)]
             model = FilterModel(temp_model, threshold=threshold, num_classes=self.num_classes)
             self.k +=1
+        model.to(self.device)
         return model
 
     def new_optim(self, model):
