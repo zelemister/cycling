@@ -18,7 +18,7 @@ def test_config(config, seed: int = 0, save_model=False):
     if "model" in config.keys():
         model = config["model"]
 
-    payload = {"min_epochs": 2, "max_patience": 2, "oversampling_rate": config["oversampling_rate"],
+    payload = {"min_epochs": 1, "max_patience": 0, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": config["transformation"], "task": task,
                "model": model, "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": stages,
