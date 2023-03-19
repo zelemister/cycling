@@ -127,7 +127,7 @@ if __name__ == "__main__":
         model=bikelane_results["model"]
 
     if "model" in incumbent.keys():
-        model = incumbent["model"].value()
+        model = incumbent["model"][0]
 
     payload = {"min_epochs": 1, "max_patience": 0, "oversampling_rate": incumbent["oversampling_rate"],
                "resolution": 256, "transformation": incumbent["transformation"], "task": task, "model": model,
