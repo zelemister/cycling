@@ -56,7 +56,7 @@ class Model_Optim_Gen:
             indices = [i for i in range(len(predictions)) if predictions.label[i] == 1]
             threshold_index = np.quantile(indices, self.quantile)
             threshold = predictions.prediction[round(threshold_index)]
-            model = FilterModel(temp_model, threshold=threshold, num_classes=self.num_classes)
+            model = FilterModel(temp_model, threshold=threshold, num_classes=self.num_classes, device=self.device)
             self.k +=1
         model.to(self.device)
         return model

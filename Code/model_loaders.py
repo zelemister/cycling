@@ -30,7 +30,7 @@ def get_model(model_name:str):
     return model
 
 class FilterModel(nn.Module):
-    def __init__(self, model, threshold:float, num_classes):
+    def __init__(self, model, threshold:float, num_classes, device = torch.device("cpu")):
         super(FilterModel, self).__init__()
         #the bikelane model is not getting trained, only the rim_layer
         for param in model.parameters():
@@ -42,7 +42,7 @@ class FilterModel(nn.Module):
                       nn.Linear(fts, fts),
                       nn.Linear(fts, num_classes)
                       )
-
+        self.device = device
     def forward(self, x):
         with torch.no_grad():
             x = self.model.conv1(x)
@@ -63,7 +63,7 @@ class FilterModel(nn.Module):
             y = y.softmax(1).t()[1]
             mask = y < self.threshold
         x = self.rim_layer(x)
-        x[mask] = torch.tensor([[1, 0]], dtype=torch.float32, requires_grad=False)
+        x[mask] = torch.tensor([[1, 0]].to(self.device), dtype=torch.float32, requires_grad=False)
         return x
 
     def get_trainable_params(self):
