@@ -14,7 +14,7 @@ def test_config(config, seed: int = 0, save_model=False):
     if "model" not in config.keys():
         config["model"] = "resnet34"
 
-    payload = {"min_epochs": 100, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
+    payload = {"min_epochs": 2, "max_patience": 2, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": config["transformation"], "task": task,
                "model": config["model"], "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": stages,
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         # change the payload
     # set function time limit to 5 days
     # time_limit = 5 * 24 * 60 * 60
-    time_limit = 60 * 60
+    time_limit = 60
 
     scenario = Scenario(configspace, deterministic=True, n_trials=200, walltime_limit=time_limit,
                         output_directory=output_directory)
