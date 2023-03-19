@@ -103,5 +103,5 @@ if __name__ == "__main__":
     smac = HyperparameterOptimizationFacade(scenario, test_config)
     incumbent = smac.optimize()
 
-    best_model = Path("../Results/").joinpath(args.task + "_tuned")
+    results_directory = Path("../Results/").joinpath(args.task + "_tuned")
     _ = test_config(incumbent, save_model=True)
