@@ -22,7 +22,7 @@ def test_config(config, seed: int = 0, save_model=False):
     # if we tune the 2 phas model, we don't set the model, that was decided during bike lane tuning
     if not (bikephasepath ==""):
         bikelane_results = pd.read_csv(bikephasepath.joinpath("..").joinpath("inputs_and_results.csv"))
-        model=bikelane_results["model"]
+        model=bikelane_results["model"][0]
 
     if "model" in config.keys():
         model = config["model"]
