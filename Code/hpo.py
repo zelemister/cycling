@@ -116,12 +116,12 @@ if __name__ == "__main__":
     loss = test_config(incumbent, save_model=True)
 
 
-    #this code section is copied out from test_config to replicate and save the payload
+    #the rest of this code is copied out from test_config to replicate and save the payload
     if "quantile" in incumbent.keys():
         quantile = incumbent["quantile"]
     else: quantile = 0.9
 
-    # if we tune the 2 phas model, we don't set the model, that was decided during bike lane tuning
+    # if we tune the 2 phase model, we don't set the model, that was decided during bike lane tuning
     if not (bikephasepath ==""):
         bikelane_results = pd.read_csv(bikephasepath.joinpath("..").joinpath("inputs_and_results.csv"))
         model=bikelane_results["model"]
