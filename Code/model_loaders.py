@@ -63,7 +63,7 @@ class FilterModel(nn.Module):
             y = y.softmax(1).t()[1]
             mask = y < self.threshold
         x = self.rim_layer(x)
-        x[mask] = torch.tensor([[1, 0]].to(self.device), dtype=torch.float32, requires_grad=False)
+        x[mask] = torch.tensor([[1, 0]], dtype=torch.float32, requires_grad=False).to(self.device)
         return x
 
     def get_trainable_params(self):
