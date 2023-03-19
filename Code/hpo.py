@@ -73,7 +73,7 @@ if __name__ == "__main__":
         task = "one_shot"
         stages = 1
         bikephasepath = ""
-    elif args.task == "2_phase":
+    elif args.task == "2phase":
 
         configspace = ConfigurationSpace({"optimizer": ["RMSProp", "Adam", "SGD"],
                                           "transformation": ["rotations", "colorJitter", "gBlur", "all"]
