@@ -394,4 +394,4 @@ if __name__ == "__main__":
 
     print(auc, loss, acc)
     result = pd.DataFrame(payload, index=[0])
-    result.to_csv(os.path.join(folder, "results.csv"))
+    result.to_csv(os.path.join(folder, "inputs_and_results.csv"))
