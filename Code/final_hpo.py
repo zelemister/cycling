@@ -11,7 +11,7 @@ def test_config(config, seed: int = 0, save_model=False):
         quantile = config["quantile"]
     else: quantile = 0.9
 
-    if bikephasepath.exists():
+    if not (bikephasepath ==""):
         bikelane_results = pd.read_csv(bikephasepath)
         model=bikelane_results["model"]
 
