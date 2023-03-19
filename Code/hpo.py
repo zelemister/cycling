@@ -5,7 +5,7 @@ from Crossvalidation import cross_validation
 from pathlib import Path
 import argparse
 import pandas as pd
-
+import os
 
 """
 This file is the Hyper parameter optimization wrapper for this project.
@@ -113,4 +113,27 @@ if __name__ == "__main__":
 
     # performing the best configuration experiment and saving the model files while at it.
     results_directory = Path("../Results/").joinpath(args.task + "_tuned")
-    _ = test_config(incumbent, save_model=True)
+    loss = test_config(incumbent, save_model=True)
+
+
+    #this code section is copied out from test_config to replicate and save the payload
+    if "quantile" in incumbent.keys():
+        quantile = incumbent["quantile"]
+    else: quantile = 0.9
+
+    # if we tune the 2 phas model, we don't set the model, that was decided during bike lane tuning
+    if not (bikephasepath ==""):
+        bikelane_results = pd.read_csv(bikephasepath.joinpath("..").joinpath("inputs_and_results.csv"))
+        model=bikelane_results["model"]
+
+    if "model" in incumbent.keys():
+        model = incumbent["model"]
+
+    payload = {"min_epochs": 1, "max_patience": 0, "oversampling_rate": incumbent["oversampling_rate"],
+               "resolution": 256, "transformation": incumbent["transformation"], "task": task, "model": model,
+               "params": "full", "weights": 1, "optimizer": incumbent["optimizer"], "lr": incumbent["lr"],
+               "stages": stages, "results_folder": results_directory, "logging": True, "quantile": quantile,
+               "save_model": True, "bikephasepath": bikephasepath, "phase": "train", "loss": loss}
+    result = pd.DataFrame(payload, index=[0])
+    result.to_csv(os.path.join(results_directory, "inputs_and_results.csv"))
+
