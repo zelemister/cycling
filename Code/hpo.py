@@ -6,11 +6,20 @@ from pathlib import Path
 import argparse
 import pandas as pd
 
+
+"""
+This file is the Hyper parameter optimization wrapper for this project.
+given an argument ["bikelane", "one_shot", "2phase"] tunes the given task
+"""
 def test_config(config, seed: int = 0, save_model=False):
+    """
+    Function that executed the test given a configuration to be tested
+    """
     if "quantile" in config.keys():
         quantile = config["quantile"]
     else: quantile = 0.9
 
+    # if we tune the 2 phas model, we don't set the model, that was decided during bike lane tuning
     if not (bikephasepath ==""):
         bikelane_results = pd.read_csv(bikephasepath)
         model=bikelane_results["model"]
@@ -33,6 +42,7 @@ def test_config(config, seed: int = 0, save_model=False):
 
 
 if __name__ == "__main__":
+    # find the task to be tuned
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", choices=["bikelane", "one_shot", "2phase"], default="one_shot")
     args = parser.parse_args()
@@ -89,11 +99,8 @@ if __name__ == "__main__":
         task = "one_shot"
         stages = 2
 
-        # this has to be set
         bikephasepath = Path("../Results/").joinpath("bikelane" + "_tuned").joinpath("Config_1")
 
-        # the model and transformation have to be set, how to constants work in smac?
-        # change the payload
     # set function time limit to 5 days
     # time_limit = 5 * 24 * 60 * 60
     time_limit = 60
