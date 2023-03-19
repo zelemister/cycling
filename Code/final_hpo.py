@@ -4,19 +4,23 @@ from smac import HyperparameterOptimizationFacade, Scenario
 from Crossvalidation import cross_validation
 from pathlib import Path
 import argparse
-
+import pandas as pd
 
 def test_config(config, seed: int = 0, save_model=False):
     if "quantile" in config.keys():
         quantile = config["quantile"]
     else: quantile = 0.9
 
-    if "model" not in config.keys():
-        config["model"] = "resnet34"
+    if bikephasepath.exists():
+        bikelane_results = pd.read_csv(bikephasepath)
+        model=bikelane_results["model"]
+
+    if "model" in config.keys():
+        model = config["model"]
 
     payload = {"min_epochs": 2, "max_patience": 2, "oversampling_rate": config["oversampling_rate"],
                "resolution": 256, "transformation": config["transformation"], "task": task,
-               "model": config["model"], "params": "full", "weights": 1,
+               "model": model, "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": stages,
                "results_folder": results_directory,
                "logging": True, "quantile": quantile, "save_model": save_model,
@@ -86,7 +90,7 @@ if __name__ == "__main__":
         stages = 2
 
         # this has to be set
-        bikephasepath = Path("../Results/").joinpath("bikelane" + "_tuned")
+        bikephasepath = Path("../Results/").joinpath("bikelane" + "_tuned").joinpath("Config_1")
 
         # the model and transformation have to be set, how to constants work in smac?
         # change the payload
