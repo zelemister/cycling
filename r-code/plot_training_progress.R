@@ -2,7 +2,7 @@ library("dplyr")
 library("ggplot2")
 
 # this file plots the training progress of one fold of one experiment
-path = "../../Results/Bikelane_tunedFor2Phase\\Config_1"
+path = "../Results/Bikelane_tunedFor2Phase\\Config_1"
 file = "/fold_5.csv"
 
 data = read.csv(paste0(path, file))
@@ -16,7 +16,7 @@ for(i in 2:nrow(data)){
 }
 id = 1:nrow(data)
 losses = data.frame(id = id, train_loss = train_loss, val_loss = val_loss)
-losses
+
 plot = ggplot(losses, aes(x=id)) +
           geom_step(aes(y=train_loss, color = "Training Loss"))+
           geom_step(aes(y=val_loss, color = "Validation Loss"))+
@@ -24,4 +24,4 @@ plot = ggplot(losses, aes(x=id)) +
           xlab("Number of Epochs")
 plot
 ggsave("Bikelane_tuned_training_progress.png", plot=plot, device = "png", 
-       path="C:\\Users\\Daniel\\Desktop\\Consulting", width =10)
+       path="C:\\Users\\Daniel\\Desktop\\Consulting", width =5)
