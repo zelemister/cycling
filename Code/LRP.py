@@ -17,7 +17,7 @@ from model_loaders import get_model
 '''
 To use the file, the following is necessary:
 1) an image  located in a folder Images_256 ('../Images_256/image_name.png')
-2) a trained neural network that can be loaded
+2) a trained neural network that can be loaded (change in line 61)
 Our project used a Resnet34 for the bike lane model and a Resnet18 for the RIM model.
 '''
 '''
