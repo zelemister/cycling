@@ -6,14 +6,13 @@ library(magick)
 
 #to read in a model, adjust the paths and the model function, based on their 
 #inputs_and_results.csv file
+#or, if it's in deliverables, rim_model was resnet18, bikelane model resnet34
 
 path = "../Deliverables/"
+# model_path = "bikelane_model.pt"
+# m = model_resnet34()
 model_path = "rim_model.pt"
 m = model_resnet18()
-
-if(cuda_is_available()){
-  torch_device("cuda")
-}else torch_device("cpu")
 #initialize model
 m$fc = nn_linear(m$fc$in_features, 2)
 state_dict = load_state_dict(paste0(path, model_path))
