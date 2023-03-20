@@ -7,15 +7,17 @@ library(magick)
 #to read in a model, adjust the paths and the model function, based on their 
 #inputs_and_results.csv file
 
-path = "../Results/Provided_Models"
+path = "../Deliverables/"
 model_path = "rim_model.pt"
-m = model_resnet34()
+m = model_resnet18()
 
+if(cuda_is_available()){
+  torch_device("cuda")
+}else torch_device("cpu")
 #initialize model
 m$fc = nn_linear(m$fc$in_features, 2)
-state_dict = load_state_dict(paste0(path, "/model_test.pt"))
+state_dict = load_state_dict(paste0(path, model_path))
 m$load_state_dict(state_dict)
-
 
 #then apply transformation to each image in img. This image has to be initialized
 #read about this in https://blogs.rstudio.com/ai/posts/2020-09-29-introducing-torch-for-r/
