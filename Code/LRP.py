@@ -16,7 +16,7 @@ from model_loaders import get_model
 
 '''
 To use the file, the following is necessary:
-1) an image  located in ('../Images_256/image_name.png')
+1) an image  located in a folder Images_256 ('../Images_256/image_name.png')
 2) a trained neural network that can be loaded
 Our project used a Resnet34 for the bike lane model and a Resnet18 for the RIM model.
 '''
@@ -32,7 +32,7 @@ image = Image.open('../Images_256/x_25020048.png') # not a rim (resnet18)
 '''
 
 #specify an image to be analyzed
-#image =
+image = Image.open('../Images_256/x_18030037.png')
 
 '''
 The following steps apply typical image transformations and load the image with an additional batch dimension as data.
@@ -55,9 +55,10 @@ data = transform(image)[None]
 
 '''
 load the model and set it to evaluation mode
+models are rim_model.pt (resnet18) or bike_model.pt (resnet34) located in the folder "Deliverables"
 '''
 model = get_model("resnet18") #18 for rim and 34 for bike model
-model.load_state_dict(torch.load("../Models" + "/model_1.pt", map_location=torch.device('cpu'))) #rim weights 100
+model.load_state_dict(torch.load("../Deliverables" + "/rim_model.pt", map_location=torch.device('cpu')))
 model = model.eval()
 
 '''
