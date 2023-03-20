@@ -23,12 +23,16 @@ def test_config(config, seed: int = 0, save_model=False):
     if not (bikephasepath ==""):
         bikelane_results = pd.read_csv(bikephasepath.joinpath("..").joinpath("inputs_and_results.csv"))
         model=bikelane_results["model"][0]
+        transformation=bikelane_results["model"][0]
 
     if "model" in config.keys():
         model = config["model"]
 
-    payload = {"min_epochs": 1, "max_patience": 0, "oversampling_rate": config["oversampling_rate"],
-               "resolution": 256, "transformation": config["transformation"], "task": task,
+    if "transformation" in config.keys():
+        model = config["transformation"]
+
+    payload = {"min_epochs": 100, "max_patience": 50, "oversampling_rate": config["oversampling_rate"],
+               "resolution": 256, "transformation": transformation, "task": task,
                "model": model, "params": "full", "weights": 1,
                "optimizer": config["optimizer"], "lr": config["lr"], "stages": stages,
                "results_folder": results_directory,
@@ -85,9 +89,7 @@ if __name__ == "__main__":
         bikephasepath = ""
     elif args.task == "2phase":
 
-        configspace = ConfigurationSpace({"optimizer": ["RMSProp", "Adam", "SGD"],
-                                          "transformation": ["rotations", "colorJitter", "gBlur", "all"]
-                                          })
+        configspace = ConfigurationSpace({"optimizer": ["RMSProp", "Adam", "SGD"]})
         lr = Float("lr", (0.00001, 0.01), log=True, default=0.001)
         quantile = Float("quantile", (0.3, 1), default=0.9)
         oversampling_rate = Float("oversampling_rate", (0,1), default=0.9)
@@ -124,16 +126,23 @@ if __name__ == "__main__":
     # if we tune the 2 phase model, we don't set the model, that was decided during bike lane tuning
     if not (bikephasepath ==""):
         bikelane_results = pd.read_csv(bikephasepath.joinpath("..").joinpath("inputs_and_results.csv"))
-        model=bikelane_results["model"]
+        model=bikelane_results["model"][0]
+        transformation=bikelane_results["model"][0]
 
     if "model" in incumbent.keys():
-        model = incumbent["model"][0]
+        model = incumbent["model"]
 
-    payload = {"min_epochs": 1, "max_patience": 0, "oversampling_rate": incumbent["oversampling_rate"],
-               "resolution": 256, "transformation": incumbent["transformation"], "task": task, "model": model,
-               "params": "full", "weights": 1, "optimizer": incumbent["optimizer"], "lr": incumbent["lr"],
-               "stages": stages, "results_folder": results_directory, "logging": True, "quantile": quantile,
-               "save_model": True, "bikephasepath": bikephasepath, "phase": "train", "loss": loss}
+    if "transformation" in incumbent.keys():
+        model = incumbent["transformation"]
+
+    payload = {"min_epochs": 100, "max_patience": 50, "oversampling_rate": incumbent["oversampling_rate"],
+               "resolution": 256, "transformation": transformation, "task": task,
+               "model": model, "params": "full", "weights": 1,
+               "optimizer": incumbent["optimizer"], "lr": incumbent["lr"], "stages": stages,
+               "results_folder": results_directory,
+               "logging": True, "quantile": quantile, "save_model": True,
+               "bikephasepath": bikephasepath,
+               "phase": "train"}
     result = pd.DataFrame(payload, index=[0])
     result.to_csv(os.path.join(results_directory, "inputs_and_results.csv"))
 
