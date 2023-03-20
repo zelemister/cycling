@@ -6,5 +6,4 @@ pandas
 scikit-learn
 zennit
 matplotlib
-zennit
 smac==2.0.0b1
