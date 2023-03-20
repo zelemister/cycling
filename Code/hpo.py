@@ -51,11 +51,12 @@ if __name__ == "__main__":
     parser.add_argument("--task", choices=["bikelane", "one_shot", "2phase"], default="one_shot")
     args = parser.parse_args()
 
-    output_directory = Path("../Results/smac_test")
-    results_directory = Path("../Results/runs_test")
+    output_directory = Path("../Results/smac3")
+    results_directory = Path("../Results/smac_runs")
     output_directory = output_directory.joinpath(args.task)
     results_directory = results_directory.joinpath(args.task)
 
+    #define hyperparameters to be tuned depending on task
     if args.task == "bikelane":
         configspace = ConfigurationSpace({"transformation": ["rotations", "colorJitter", "gBlur", "all"],
                                           "model": ["resnet34", "resnet50", "resnet18"],
@@ -72,7 +73,6 @@ if __name__ == "__main__":
         bikephasepath = ""
 
     elif args.task == "one_shot":
-
         configspace = ConfigurationSpace({"transformation": ["rotations", "colorJitter", "gBlur", "all"],
                                           "model": ["resnet34", "resnet50", "resnet18"],
                                           "optimizer": ["RMSProp", "Adam", "SGD"]
@@ -104,13 +104,19 @@ if __name__ == "__main__":
         bikephasepath = Path("../Results/").joinpath("bikelane" + "_tuned").joinpath("Config_1")
 
     # set function time limit to 5 days
-    # time_limit = 5 * 24 * 60 * 60
-    time_limit = 60
+    time_limit = 5 * 24 * 60 * 60
 
     scenario = Scenario(configspace, deterministic=True, n_trials=200, walltime_limit=time_limit,
                         output_directory=output_directory)
     smac = HyperparameterOptimizationFacade(scenario, test_config)
+
+    #perform hyperparameter optimization
     incumbent = smac.optimize()
+
+
+
+######################################################################################
+
 
 
     # performing the best configuration experiment and saving the model files while at it.
