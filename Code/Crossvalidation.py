@@ -317,7 +317,7 @@ def cross_validation(payload, seed=0, k=5):
         history["Test_acc"].append(corresponding_acc)
         history["training_progress"].append(training_progress)
         if payload["save_model"]:
-            torch.save(best_model.state_dict(), os.path.join(results_folder, f"model_{fold}.pt"))
+            torch.save(dict(best_model.state_dict()), os.path.join(results_folder, f"model_{fold}.pt"))
             get_prediction_list(best_model, train_loader, test_loader,
                                               device=device, folder=results_folder, fold=fold)
 
@@ -326,7 +326,7 @@ def cross_validation(payload, seed=0, k=5):
             auc = np.mean(history["Test_AUC"])
             loss = np.mean(history["Test_Loss"])
             acc = np.mean(history["Test_acc"])
-            torch.save(best_model.state_dict(), os.path.join(results_folder, "trained_model.pt"))
+            torch.save(dict(best_model.state_dict()), os.path.join(results_folder, "trained_model.pt"))
             return auc, loss, acc
     # save the results
     save_results(history, results_folder,payload["logging"])
