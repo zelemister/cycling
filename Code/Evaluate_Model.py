@@ -8,18 +8,35 @@ from transformations import get_transformer
 from pathlib import Path
 import numpy as np
 from PIL import Image
-#model_path = Path("../Results/RIM_Oneshot_Tuned61/Config_1/trained_model.pt")
-resolution=256
+
+
+
+"""
+This file takes an experiment that is given through the outputfolder, and creates predictions on the generalization set.
+Then it makes predictions on the unlabeled data.
+Since through cross validation 5 models were generated, it does that five times, but only the first one counts 
+(i.e. unlabeled_predictions_1.csv and generalization_predictions_1.csv)
+Note that to train the model on the whole dataset and get the best predictions on the unlabeled data, the --phase "complete_data"
+has to be set.
+"""
+#only adjust this line
 output_folder = Path("../Results/Complete_RIM_Oneshot_Tuned61_Weight100/")
+
+resolution=256
 folder = output_folder.joinpath("Config_1/")
 data = pd.read_csv("../labels_complete.csv")
 unlabeled_data=data[np.isnan(data["Label"])]
-transformation = get_transformer("rotations", 256)
-data_payload = {"task": "one_shot", "phase": "test", "set": "train", "transform": transformation,
-                "oversamplingrate": 43, "split": 0, "resolution": resolution,
+
+input_data = pd.read_csv(output_folder.joinpath("inputs_and_results.csv"))
+task = input_data["task"][0]
+transformation_type = input_data["transformation"][0]
+oversampling_rate = input_data["oversampling_rate"][0]
+transformation = get_transformer(transformation_type, 256)
+model_name = input_data["model"][0]
+data_payload = {"task": task, "phase": "test", "set": "train", "transform": transformation,
+                "oversamplingrate": oversampling_rate, "split": 0, "resolution": resolution,
                 "model_name": "resnet"}
-#model = get_model("resnet18")
-model = get_model("resnet18")
+model = get_model(model_name)
 file_path = Path(f"../Images_{str(resolution)}")
 
 
