@@ -2,7 +2,7 @@ library("dplyr")
 library("ggplot2")
 
 # this file plots the training progress of one fold of one experiment
-path = "../../Results/\\\Bikelane_tunedFor2Phase\\Config_1"
+path = "../../Results/Bikelane_tunedFor2Phase\\Config_1"
 file = "/fold_5.csv"
 
 data = read.csv(paste0(path, file))
